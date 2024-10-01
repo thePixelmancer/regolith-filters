@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MC-Menu Editor</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1 id="filename">No guide loaded.</h1>
+        <div class="file-controls">
+          <label for="file-input" class="mc-panel upload-button">Load guide</label>
+          <input type="file" id="file-input" accept=".js" hidden />
+          <button id="download-button" class="mc-panel">Download guide</button>
+        </div>
+      </header>
+      <!-- --------------------------------------------------------------------------------- -->
+      <div class="main-content">
+        <aside>
+          <h2>Pages</h2>
+          <ul id="page-list">
+            <li class="mc-panel">
+              <span class="page-id">Page ID Example</span>
+              <div class="page-controls">
+                <button class="mc-panel edit-page">Edit</button>
+                <button class="mc-panel rename-page">Rename</button>
+                <button class="mc-panel delete delete-page">Delete</button>
+              </div>
+            </li>
+          </ul>
+          <button class="mc-panel" id="add-page-button">+ Add Page</button>
+        </aside>
+        <!-- --------------------------------------------------------------------------------- -->
+        <section class="mc-panel" id="page-editor">
+          <h2 id="current-page-title">Page ID:</h2>
+          <label for="page-title">Title:</label>
+          <input type="text" placeholder="Title" id="page-title" />
+          <label for="page-body">Text:</label>
+          <textarea class="mc-panel-reverse" id="page-body" rows="20"></textarea>
+          <button id="save-button" class="mc-panel">Save</button>
+          <!-- --------------------------------------------------------------------------------- -->
+          <h3>Button Editor</h3>
+          <ul class="mc-panel-reverse" id="button-editor">
+          </ul>
+          <button class="mc-panel" id="add-button-button">+ Add a Button</button>
+        </section>
+      </div>
+    </div>
+    <div id="main-modal" class="modal">
+      <div class="mc-panel modal-content">
+        <p>Choose guide to edit:</p>
+        <ul id="modal-buttons-list">
+        </ul>
+        <button id="close-main-modal" class="mc-panel delete">Close</button>
+      </div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

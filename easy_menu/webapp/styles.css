@@ -1,0 +1,274 @@
+@font-face {
+  font-family: "minecraft";
+  src: url(fonts/Minecraft.ttf);
+}
+
+:root {
+  --background-color: #000;
+  --primary-color: #6289a8;
+  --red: #c91a29;
+  --accent-color: #ffd65c;
+  --aside-color: #474755;
+  --editor-color: #c6c6c6;
+  --light-gray: #c6c6c6;
+  --dark-gray: #3d3d50;
+  --white: #ffffff;
+  --black: #000000;
+}
+
+* {
+  font-family: minecraft;
+  color: var(--dark-gray);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--background-color);
+}
+
+h1 {
+  color: var(--white);
+}
+
+h2 {
+  margin: 10px 0;
+}
+
+aside h2 {
+  color: var(--light-gray);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 20px;
+}
+.mc-panel {
+  background-color: var(--light-gray);
+  color: var(--dark-gray);
+
+  border-top: 2px solid var(--white);
+  border-left: 2px solid var(--white);
+  border-bottom: 2px solid var(--dark-gray);
+  border-right: 2px solid var(--dark-gray);
+}
+.mc-panel-reverse {
+  border-top: 2px solid var(--dark-gray);
+  border-left: 2px solid var(--dark-gray);
+  border-bottom: 2px solid var(--white);
+  border-right: 2px solid var(--white);
+}
+button,
+.upload-button {
+  padding: 0.6em 0.5em;
+  font-size: 0.8em;
+  cursor: pointer;
+  background-color: var(--light-gray);
+  text-align: center;
+  transition-duration: 0.3s;
+}
+
+button:hover,
+button:active {
+  filter: brightness(1.2);
+}
+
+button.delete {
+  background-color: var(--red);
+  color: var(--white);
+}
+select {
+  background-color: var(--light-gray);
+  padding: 5px;
+  color: var(--dark-gray);
+  border-top: 2px solid var(--dark-gray);
+  border-left: 2px solid var(--dark-gray);
+  border-bottom: 2px solid var(--white);
+  border-right: 2px solid var(--white);
+}
+option {
+  padding: 20px;
+  height: 40px;
+  background: var(--black);
+  color: var(--white);
+  border-radius: 0%;
+}
+input[type="text"] {
+  text-align: center;
+  padding: 10px;
+  height: 30px;
+  background: var(--black);
+  color: var(--white);
+  border-top: 2px solid var(--dark-gray);
+  border-left: 2px solid var(--dark-gray);
+  border-bottom: 2px solid var(--white);
+  border-right: 2px solid var(--white);
+}
+input[type="text"]:focus {
+  outline: none;
+  border: 2px solid var(--accent-color);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+}
+
+.file-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.main-content {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+  gap: 20px;
+}
+
+aside {
+  display: flex;
+  flex-direction: column;
+  flex: 2;
+  background-color: var(--aside-color);
+  padding: 10px 30px;
+}
+
+#page-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#page-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 10px;
+}
+
+.page-id {
+  font-weight: bold;
+}
+
+.page-controls {
+  display: flex;
+  gap: 5px;
+}
+
+.page-controls button {
+  flex: 1;
+}
+#add-page-button {
+  margin-top: 10px;
+}
+
+section {
+  flex: 3;
+  background-color: var(--editor-color);
+  padding: 10px 30px;
+}
+
+section textarea {
+  padding: 10px;
+  background-color: var(--black);
+  color: var(--white);
+}
+textarea:focus {
+  outline: none;
+  border: 2px solid var(--accent-color);
+}
+
+#page-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#button-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  list-style: none;
+  background-color: var(--black);
+}
+#button-editor li {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  justify-content: space-between;
+  gap: 10px;
+}
+.button-controls {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 5px;
+}
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0); /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+  backdrop-filter: blur(5px);
+}
+
+/* Modal Content/Box */
+.modal-content {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-direction: column;
+  margin: 10% auto; /* 15% from the top and centered */
+  padding: 20px;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+#modal-buttons-list {
+  width: 100%;
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+#modal-buttons-list li button {
+  min-width: 150px;
+}
+.dirty {
+  background-color: var(--light-gray);
+  animation: pulsate-color 2s infinite;
+}
+
+@keyframes pulsate-color {
+  0% {
+    background-color: var(--light-gray);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1);
+    background-color: var(--accent-color);
+    outline: var(--accent-color) 2px solid;
+    opacity: 1;
+  }
+  0% {
+    background-color: var(--light-gray);
+    opacity: 1;
+  }
+}
