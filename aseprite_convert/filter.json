@@ -1,0 +1,11 @@
+{
+  "description": "Automatically converts aseprite textures .png, spritesheets or frames.",
+  "exportData": true,
+  "filters": [
+      {
+          "runWith": "python",
+          "script": "./main.py",
+          "name": "aseprite_convert"
+      }
+  ]
+}
