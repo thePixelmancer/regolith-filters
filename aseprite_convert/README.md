@@ -1,10 +1,13 @@
-# Aseprite File Converter
+# Aseprite Converter
 
 This script converts Aseprite files (`.ase` or `.aseprite`) from your RP folder - into PNG files. If the Aseprite file is animated, it will be exported as a vertical spritesheet. If the file has `_frames` in its name, a folder will be created containing separate numbered PNG files.
 
 INPUT
+
 ![1](https://github.com/user-attachments/assets/0c424ffe-87b5-4ab6-89bb-eadea8423e62)
+
 OUTPUT
+
 ![2](https://github.com/user-attachments/assets/994d01fe-58b3-4cf9-a4cf-1947e4747d3d)
 
 
