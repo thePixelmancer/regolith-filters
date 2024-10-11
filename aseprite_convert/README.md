@@ -12,7 +12,7 @@ The configuration for the script can be modified in the `config.json` file locat
 
 Here’s a sample structure of the `config.json`:
 
-```json
+```jsonc
 {
     "aseprite_exe_path": "C:/Program Files/Aseprite/aseprite.exe",
     "spritesheet_type": "vertical"  // horizontal, vertical, rows, columns, packed
