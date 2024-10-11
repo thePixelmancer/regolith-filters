@@ -3,21 +3,26 @@ import json
 import subprocess
 import shutil
 
+
 # Load the configuration JSON file
-with Path("data/config.json").open() as file:
-    config = json.load(file)
-    # Check for Aseprite installation
-    if shutil.which("aseprite"):
-        config["aseprite_exe_path"] = shutil.which("aseprite")
-        print("Aseprite found in PATH.")
-    elif Path(config["aseprite_exe_path"]).is_file():
-        config["aseprite_exe_path"] = Path(config["aseprite_exe_path"])
-        print(f"Aseprite found at {config['aseprite_exe_path']}.")
-    else:
-        print(f"Aseprite installation not found!")
+def load_config():
+    with Path("data/config.json").open() as file:
+        config = json.load(file)
+        # Check for Aseprite installation
+        if shutil.which("aseprite"):
+            config["aseprite_exe_path"] = shutil.which("aseprite")
+            print("Aseprite found in PATH.")
+            return config
+        elif Path(config["aseprite_exe_path"]).is_file():
+            config["aseprite_exe_path"] = Path(config["aseprite_exe_path"])
+            print(f"Aseprite found at {config['aseprite_exe_path']}.")
+            return config
+        else:
+            print(f"Aseprite installation not found!")
+            return None
 
 
-def convert_aseprite(imgpath: Path) -> None:
+def convert_aseprite(imgpath: Path, config: dict) -> None:
     # If the has "_frames" in its name, output frames as separate PNGs
     if "_frames" in imgpath.stem:
         # Remove "_frames" from the file name and create the output folder
@@ -57,13 +62,16 @@ def convert_aseprite(imgpath: Path) -> None:
 
 # EXECUTE SCRIPT
 if __name__ == "__main__":
+    config = load_config()
+    # Check for issues in the configuration
+    if config:
 
-    # Use rglob to recursively search for files in all subdirectories.
-    for imgpath in Path(".").rglob("*"):
+        # Use rglob to recursively search for files in all subdirectories.
+        for imgpath in Path(".").rglob("*"):
 
-        # Check if the current item is a file.
-        if imgpath.is_file():
-            # Handle Aseprite files
-            if imgpath.suffix in [".ase", ".aseprite"]:
-                convert_aseprite(imgpath)  # Convert layered formats to png
-                imgpath.unlink()  # Delete the original file.
+            # Check if the current item is a file.
+            if imgpath.is_file():
+                # Handle Aseprite files
+                if imgpath.suffix in [".ase", ".aseprite"]:
+                    convert_aseprite(imgpath, config)
+                    imgpath.unlink()  # Delete the original file.
