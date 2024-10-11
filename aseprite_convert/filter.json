@@ -4,7 +4,7 @@
   "filters": [
       {
           "runWith": "python",
-          "script": "./main.py",
+          "script": "./aseprite_convert.py",
           "name": "aseprite_convert"
       }
   ]
