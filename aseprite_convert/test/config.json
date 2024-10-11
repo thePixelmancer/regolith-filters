@@ -1,0 +1,30 @@
+{
+	"author": "Pixelmancer",
+	"name": "aseprite_convert_test",
+	"packs": {
+		"behaviorPack": "./packs/BP",
+		"resourcePack": "./packs/RP"
+	},
+	"regolith": {
+		"dataPath": "./data",
+		"filterDefinitions": {
+			"aseprite_convert": {
+				"runWith": "python",
+				"script": "../aseprite_convert.py"
+			}
+		},
+		"profiles": {
+			"default": {
+				"export": {
+					"readOnly": true,
+					"target": "local"
+				},
+				"filters": [
+					{
+						"filter": "aseprite_convert"
+					}
+				]
+			}
+		}
+	}
+}
