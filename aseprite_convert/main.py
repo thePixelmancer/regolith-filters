@@ -60,7 +60,7 @@ def convert_aseprite_file(aseprite_file_path: Path) -> None:
 
 
 if __name__ == "__main__":
-    input_directory = Path("test")
+    input_directory = Path("RP")
     # Check if the input directory exists
     if not input_directory.exists():
         print(f"Input directory {input_directory} does not exist.")
