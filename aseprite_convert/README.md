@@ -41,10 +41,6 @@ Here’s a sample structure of the `config.json`:
 3. ???
 4. Profit
 
-## License
-
-This project is licensed under the terms that allow everyone to use the filter but prohibits copying or selling it.
-
 ## Acknowledgments
 
 - [Aseprite](https://aseprite.org/) for the amazing software.
