@@ -1,0 +1,12 @@
+{
+  "description": "Automatically creates spawn egg colors in entity files, if none is specified.",
+  "exportData": false,
+  "filters": [
+      {
+          "runWith": "python",
+          "script": "./auto_spawn_egg.py",
+          "name": "Auto Spawn Egg",
+          "reqiorements": "requirements.txt"
+      }
+  ]
+}
