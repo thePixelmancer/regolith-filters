@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Bedrock-OSS/regolith-schemas/main/config/v1.4.json",
+  "author": "test",
+  "name": "test",
+  "packs": {
+    "behaviorPack": "./packs/BP",
+    "resourcePack": "./packs/RP"
+  },
+  "regolith": {
+    "dataPath": "./packs/data",
+    "filterDefinitions": {
+      "replacements": {
+        "runWith": "python",
+        "script": "../replacements.py"
+      }
+    },
+    "formatVersion": "1.4.0",
+    "profiles": {
+      "default": {
+        "filters": [
+          {
+            "filter": "replacements",
+            "settings": {
+              "replace": {
+                "fizz": "buzz",
+                "foo": "bar"
+              }
+            }
+          }
+        ],
+        "export": {
+          "build": "standard",
+          "readOnly": false,
+          "target": "local"
+        }
+      }
+    }
+  }
+}

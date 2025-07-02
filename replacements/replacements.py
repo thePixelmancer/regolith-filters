@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import sys
 
+
 def replace_in_file(file_path, replacements):
     try:
         text = file_path.read_text(encoding="utf-8")
@@ -18,13 +19,20 @@ def replace_in_file(file_path, replacements):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("No replacement settings defined.")
+        sys.exit()
+    config = json.loads(sys.argv[1])
+    replacements = config.get("replace", None)
+    if not replacements:
+        print("No replacements defined.")
+        sys.exit()
+    extensions = config.get(
+        "extensions", [".js", ".ts", ".json", ".material", ".mcfunction", ".txt", ".md"]
+    )
+    paths = config.get("paths", ["RP", "BP"])
 
-    config = json.loads("data/replacements/config.json")
-    replacements = config.get("replacements", {})
-    extensions = config.get("extensions", [])
-    paths = config.get("paths", [])
-    
     for path in paths:
-        for file in path.rglob("*"):
+        for file in Path(path).rglob("*"):
             if file.is_file() and file.suffix in extensions:
                 replace_in_file(file, replacements)
