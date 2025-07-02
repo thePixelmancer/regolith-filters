@@ -24,7 +24,8 @@
               "replace": {
                 "fizz": "buzz",
                 "foo": "bar"
-              }
+              },
+              "replace_folders": true
             }
           }
         ],

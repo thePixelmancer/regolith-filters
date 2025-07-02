@@ -58,6 +58,10 @@ The filter accepts the following settings:
   }
   ```
 
+- **replace_folders** (optional):  
+  If set to `true`, the filter will also rename folders whose names contain any of the target strings, applying the same replacement rules as for file contents.  
+  Default: `false`
+
 - **extensions** (optional):  
   A list of file extensions to process.  
   Default:  
@@ -66,7 +70,7 @@ The filter accepts the following settings:
   ```
 
 - **paths** (optional):  
-  A list of directories to search for files to process.  
+  A list of directories to search for files and folders to process.  
   Default:  
   ```json
   ["RP", "BP"]
@@ -74,7 +78,8 @@ The filter accepts the following settings:
 
 ## How it works
 
-The filter scans all files in the specified `paths` with the given `extensions` and replaces every occurrence of the keys in `replacements` with their corresponding values.
+The filter scans all files in the specified `paths` with the given `extensions` and replaces every occurrence of the keys in `replace` with their corresponding values.  
+If `replace_folders` is enabled, it will also rename folders whose names match any of the target strings, applying the same replacement rules.
 
 ## Example
 
