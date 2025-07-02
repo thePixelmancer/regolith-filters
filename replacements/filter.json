@@ -1,6 +1,6 @@
 {
   "description": "Replaces strings to other strings",
-  "exportData": true,
+  "exportData": false,
   "filters": [
       {
           "runWith": "python",
