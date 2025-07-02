@@ -1,0 +1,19 @@
+{
+  "replacements": {
+    "@namespace": "namespace",
+    "@team": "teamname",
+    "@proj": "projectname"
+  },
+  "extensions": [
+    ".js",
+    ".ts",
+    ".json",
+    ".txt",
+    ".mcfunction",
+    ".material"
+  ],
+  "paths": [
+    "RP",
+    "BP"
+  ]
+}

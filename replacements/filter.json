@@ -1,0 +1,11 @@
+{
+  "description": "Replaces strings to other strings",
+  "exportData": true,
+  "filters": [
+      {
+          "runWith": "python",
+          "script": "./replacements.py",
+          "name": "replacements"
+      }
+  ]
+}
