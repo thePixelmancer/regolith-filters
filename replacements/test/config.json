@@ -25,7 +25,8 @@
                 "fizz": "buzz",
                 "foo": "bar"
               },
-              "replace_folders": true
+              "rename_folders": true,
+              "rename_files": true
             }
           }
         ],
