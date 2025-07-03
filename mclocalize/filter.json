@@ -1,0 +1,11 @@
+{
+  "description": "Generates .lang files based on english",
+  "exportData": false,
+  "filters": [
+    {
+      "runWith": "python",
+      "script": "./mclocalize.py",
+      "name": "mclocalize"
+    }
+  ]
+}
