@@ -1,0 +1,11 @@
+{
+	"description": "A filter that makes image combinations based on a configuration file.",
+	"exportData": false,
+	"filters": [
+		{
+			"runWith": "python",
+			"script": "./image_mixer.py",
+			"name": "image_mixer"
+		}
+	]
+}
