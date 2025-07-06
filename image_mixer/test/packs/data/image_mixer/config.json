@@ -1,0 +1,26 @@
+{
+  "image_mixers": [
+    {
+      "output_folder": "RP/textures/output/",
+      "output_template": "filename_{index}_{layer1}_{layer2}.png",
+      "layers": [
+        {
+          "path": "RP/textures/background.png",
+          "offset": [0, 0],
+          "blend_mode": "normal"
+        },
+        {
+          "path": "RP/textures/frames",
+          "offset": [0, 0],
+          "blend_mode": "normal"
+        },
+        {
+          "path": "RP/textures/icons",
+          "anchor": "center",
+          "offset": [0, 0],
+          "blend_mode": "normal"
+        }
+      ]
+    }
+  ]
+}

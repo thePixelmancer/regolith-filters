@@ -55,15 +55,13 @@ def main():
         sys.exit()
     config = json.loads(sys.argv[1])
     replacements = config.get("replace", None)
-    if not replacements:
-        print("No replacements defined.")
-        sys.exit()
-    extensions = config.get(
-        "extensions", None
-    )
+    extensions = config.get("extensions", None)
     replace_folders = config.get("rename_folders", False)
     replace_files = config.get("rename_files", False)
     paths = config.get("paths", ["RP", "BP"])
+    if not replacements:
+        print("No replacements defined.")
+        sys.exit()
 
     for path in paths:
         # First, rename folders
@@ -75,7 +73,9 @@ def main():
         # Then, replace in files
         for file in Path(path).rglob("*"):
             if file.is_file():
-                if extensions is None or (isinstance(extensions, list) and file.suffix in extensions):
+                if extensions is None or (
+                    isinstance(extensions, list) and file.suffix in extensions
+                ):
                     replace_in_file(file, replacements)
 
 
