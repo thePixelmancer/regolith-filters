@@ -1,11 +1,11 @@
 {
-  "description": "Downloads remote files",
-  "exportData": true,
+  "description": "Downloads remote github files",
+  "exportData": false,
   "filters": [
-      {
-          "runWith": "python",
-          "script": "./fetcher.py",
-          "name": "fetcher"
-      }
+    {
+      "runWith": "python",
+      "script": "./fetcher.py",
+      "name": "fetcher"
+    }
   ]
 }
