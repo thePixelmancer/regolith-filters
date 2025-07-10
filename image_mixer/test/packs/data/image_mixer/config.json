@@ -1,7 +1,7 @@
 {
   "image_mixers": [
     {
-      "output_folder": "RP/textures/output/",
+      "output_folder": "RP/textures/",
       "output_template": "filename_{index}_{layer1}_{layer2}.png",
       "layers": [
         {
@@ -16,7 +16,7 @@
         },
         {
           "path": "RP/textures/icons",
-          "anchor": "center",
+          "scale": [1,2],
           "offset": [0, 0],
           "blend_mode": "normal"
         }

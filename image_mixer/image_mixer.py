@@ -15,29 +15,24 @@ def generate_combinations(layers):
     all_layers = []
     for layer in layers:
         layer_path = Path(layer["path"])
+        # Collect all relevant properties to copy to each file entry
+        layer_props = {
+            "offset": layer.get("offset", [0, 0]),
+            "blend_mode": layer.get("blend_mode", "normal"),
+            "anchor": layer.get("anchor", "center"),
+            "scale": layer.get("scale", None),
+            "resample": layer.get("resample", None),
+            "suffix": layer.get("suffix", ""),
+        }
         if layer_path.is_dir():
             # If the layer is a directory, add each PNG file as a variant
             final_layer = [
-                {
-                    "path": str(file),
-                    "offset": layer.get("offset", [0, 0]),
-                    "blend_mode": layer.get("blend_mode", "normal"),
-                    "suffix": f"_{file.stem}",
-                    "anchor": layer.get("anchor", "top_left"),
-                }
+                dict(layer_props, path=str(file), suffix=f"_{file.stem}")
                 for file in layer_path.glob("*.png")
             ]
         else:
             # If the layer is a single file, just add it as a single variant
-            final_layer = [
-                {
-                    "path": str(layer_path),
-                    "offset": layer.get("offset", [0, 0]),
-                    "blend_mode": layer.get("blend_mode", "normal"),
-                    "suffix": layer.get("suffix", ""),
-                    "anchor": layer.get("anchor", "top_left"),
-                }
-            ]
+            final_layer = [dict(layer_props, path=str(layer_path))]
         all_layers.append(final_layer)
     # Return all possible combinations of layers (cartesian product)
     return list(itertools.product(*all_layers))
@@ -68,8 +63,39 @@ def generate_images(image_mixer):
         for layer in combination[1:]:
             overlay_img = Image.open(layer["path"]).convert("RGBA")
             base_w, base_h = base_img.size
+            # --- Scaling logic ---
+            scale = layer.get("scale", None)
+            resample_str = (layer.get("resample") or "nearest").upper()
+            resample_map = {
+                "NEAREST": Image.NEAREST,
+                "BILINEAR": Image.BILINEAR,
+                "BICUBIC": Image.BICUBIC,
+                "LANCZOS": Image.LANCZOS,
+                "BOX": Image.BOX,
+                "HAMMING": Image.HAMMING,
+            }
+            resample_method = resample_map.get(resample_str, Image.NEAREST)
             overlay_w, overlay_h = overlay_img.size
-            anchor = layer.get("anchor", "top_left")
+            if scale is not None:
+                if isinstance(scale, (int, float)):
+                    # Uniform scaling
+                    overlay_w = int(overlay_w * scale)
+                    overlay_h = int(overlay_h * scale)
+                    overlay_img = overlay_img.resize((overlay_w, overlay_h), resample=resample_method)
+                elif isinstance(scale, (list, tuple)) and len(scale) == 2:
+                    # Non-uniform scaling
+                    overlay_w = int(overlay_w * scale[0])
+                    overlay_h = int(overlay_h * scale[1])
+                    overlay_img = overlay_img.resize((overlay_w, overlay_h), resample=resample_method)
+                elif isinstance(scale, dict):
+                    # Absolute pixel size
+                    overlay_w = int(scale.get("width", overlay_w))
+                    overlay_h = int(scale.get("height", overlay_h))
+                    overlay_img = overlay_img.resize((overlay_w, overlay_h), resample=resample_method)
+            else:
+                overlay_w, overlay_h = overlay_img.size
+
+            anchor = layer.get("anchor", "center")
             offset = tuple(layer.get("offset", [0, 0]))
 
             # Map anchor names to position calculation lambdas
