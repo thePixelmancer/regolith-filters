@@ -1,22 +1,21 @@
-
 # Regolith Image Mixer
 
-A flexible Python tool for batch-generating composite images from layered PNGs, with support for anchor positioning, offsets, and customizable output filenames.
+A flexible, scriptable Python tool for batch-generating composite images from layered PNGs, with support for anchor positioning, scaling, offsets, and customizable output filenames.
 
-## What is this for?
-This script is useful for creating composite image combinations from a few input images. It's especially handy for:
-- Generating recipe images (e.g., for games or apps)
-- Adding backgrounds or frames to icons for UI elements
-- Combining texture variants for resource packs or asset pipelines
-- Any scenario where you want to automate the creation of many images from a small set of base layers
+## Why use this?
+This script is ideal for creating many composite image combinations from a few input images. It's especially handy for:
+- Generating recipe images (e.g., for games, apps, or wikis)
+- Adding backgrounds, frames, or effects to icons for UI elements
+- Combining texture variants for resource packs, modding, or asset pipelines
+- Automating the creation of image sets for GUIs, previews, or batch art tasks
 
 ## Features
 - Combine multiple image layers (backgrounds, frames, icons, etc.) into new images.
 - Supports both single files and directories of images for each layer.
 - Flexible anchor system: overlays are centered by default, but you can place overlays at corners, edges, or custom offsets.
-- Powerful scaling: scale overlays uniformly, non-uniformly, or to an exact pixel size, with selectable resampling methods.
+- Powerful scaling: scale overlays uniformly, non-uniformly, or to an exact pixel size, with selectable resampling methods (nearest, bilinear, bicubic, lanczos, box, hamming).
 - Output filenames are fully customizable using templates (e.g., `output_{index}_{layer1}_{layer2}.png`).
-- Simple JSON configuration for batch processing.
+- Simple, human-readable JSON configuration for batch processing.
 
 ## Requirements
 - Python 3.7+
@@ -58,22 +57,39 @@ pip install pillow
 ```
 - `output_template` can use `{index}` (combination number) and `{layer0}`, `{layer1}`, etc. (filename stem for each layer).
 - Each `layer` can be a single PNG file or a directory of PNGs.
-- Supported `anchor` values: `center` (default), `top_left`, `top_center`, `bottom_center`, `left_center`, `right_center`, `bottom_left`, `bottom_right`, `top_right`.
-- `offset` is `[x, y]` in pixels, applied after anchor positioning.
-- `scale` can be:
-  - a single number (e.g. `2.0`) for uniform scaling
-  - a list of two numbers (e.g. `[1, 2]`) for non-uniform scaling (width, height)
-  - an object with `width` and `height` for absolute pixel size (e.g. `{ "width": 64, "height": 32 }`)
-- `resample` (optional) sets the scaling method: `nearest` (default), `bilinear`, `bicubic`, `lanczos`, `box`, or `hamming`.
+- **output_template**: Use `{index}` (combination number) and `{layer0}`, `{layer1}`, etc. (filename stem for each layer).
+- **Each layer** can be a single PNG file or a directory of PNGs.
+- **anchor**: `center` (default), `top_left`, `top_center`, `bottom_center`, `left_center`, `right_center`, `bottom_left`, `bottom_right`, `top_right`.
+- **offset**: `[x, y]` in pixels, applied after anchor positioning.
+- **scale**:
+  - Single number (e.g. `2.0`) for uniform scaling
+  - List of two numbers (e.g. `[1, 2]`) for non-uniform scaling (width, height)
+  - Object with `width` and `height` for absolute pixel size (e.g. `{ "width": 64, "height": 32 }`)
+- **resample** (optional): Scaling method: `nearest` (default), `bilinear`, `bicubic`, `lanczos`, `box`, or `hamming`.
 
 ## How It Works
 - The script computes all possible combinations of the provided layers (cartesian product).
-- For each combination, it overlays the images in order, using anchor and offset for placement.
+- For each combination, it overlays the images in order, using anchor, scaling, and offset for placement.
 - The output filename is generated from the template and saved in the output folder.
 
 ## License
 MIT
 
+## Screenshots & Examples
+
+<!--
+Replace these placeholders with your own screenshots!
+-->
+
+### Example: Input Folder Structure
+![Input Folder Structure](docs/screenshots/input_structure.png)
+
+### Example: Output Images (After Running Script)
+![Output Images](docs/screenshots/output_images.png)
+
+### Example: Output Image Preview
+![Sample Output Image](docs/screenshots/sample_output.png)
+
 ---
 
-**Contributions and issues welcome!**
+**Contributions, suggestions, and issues welcome!**
