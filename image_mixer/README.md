@@ -88,13 +88,10 @@ Replace these placeholders with your own screenshots!
 -->
 
 ### Example: Input Folder Structure
-![Input Folder Structure](docs/screenshots/input_structure.png)
-
+<img width="100%" alt="1" src="https://github.com/user-attachments/assets/c21b9460-e054-4b88-9921-f07738cf9899" />
+<img width="100%" alt="2" src="https://github.com/user-attachments/assets/f9d6e2ea-0226-4ee8-b129-802dd8d796d0" />
 ### Example: Output Images (After Running Script)
-![Output Images](docs/screenshots/output_images.png)
-
-### Example: Output Image Preview
-![Sample Output Image](docs/screenshots/sample_output.png)
+<img width="100%" alt="3" src="https://github.com/user-attachments/assets/71738963-fc10-4ad4-adab-d437dc59defd" />
 
 ---
 
