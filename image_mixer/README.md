@@ -13,7 +13,8 @@ This script is useful for creating composite image combinations from a few input
 ## Features
 - Combine multiple image layers (backgrounds, frames, icons, etc.) into new images.
 - Supports both single files and directories of images for each layer.
-- Flexible anchor system: place overlays at center, corners, edges, or custom offsets.
+- Flexible anchor system: overlays are centered by default, but you can place overlays at corners, edges, or custom offsets.
+- Powerful scaling: scale overlays uniformly, non-uniformly, or to an exact pixel size, with selectable resampling methods.
 - Output filenames are fully customizable using templates (e.g., `output_{index}_{layer1}_{layer2}.png`).
 - Simple JSON configuration for batch processing.
 
@@ -44,7 +45,12 @@ pip install pillow
       "layers": [
         { "path": "RP/textures/background.png", "offset": [0, 0] },
         { "path": "RP/textures/frames", "offset": [0, 0] },
-        { "path": "RP/textures/icons", "anchor": "center", "offset": [0, 0] }
+        {
+          "path": "RP/textures/icons",
+          "scale": [1, 2], // Non-uniform scaling: width x1, height x2
+          "resample": "lanczos", // Optional: resampling method (nearest, bilinear, bicubic, lanczos, box, hamming)
+          "offset": [0, 0]
+        }
       ]
     }
   ]
@@ -52,8 +58,13 @@ pip install pillow
 ```
 - `output_template` can use `{index}` (combination number) and `{layer0}`, `{layer1}`, etc. (filename stem for each layer).
 - Each `layer` can be a single PNG file or a directory of PNGs.
-- Supported `anchor` values: `top_left` (default), `center`, `top_center`, `bottom_center`, `left_center`, `right_center`, `bottom_left`, `bottom_right`, `top_right`.
+- Supported `anchor` values: `center` (default), `top_left`, `top_center`, `bottom_center`, `left_center`, `right_center`, `bottom_left`, `bottom_right`, `top_right`.
 - `offset` is `[x, y]` in pixels, applied after anchor positioning.
+- `scale` can be:
+  - a single number (e.g. `2.0`) for uniform scaling
+  - a list of two numbers (e.g. `[1, 2]`) for non-uniform scaling (width, height)
+  - an object with `width` and `height` for absolute pixel size (e.g. `{ "width": 64, "height": 32 }`)
+- `resample` (optional) sets the scaling method: `nearest` (default), `bilinear`, `bicubic`, `lanczos`, `box`, or `hamming`.
 
 ## How It Works
 - The script computes all possible combinations of the provided layers (cartesian product).
