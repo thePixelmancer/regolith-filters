@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/6dc74a07-5d73-4091-9fff-59262e44e4c7" alt="Regolith Image Mixer Banner" style="image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; max-width: 600px;" />
+  <img src="https://github.com/user-attachments/assets/6dc74a07-5d73-4091-9fff-59262e44e4c7" alt="Regolith Image Mixer Banner" width="384" style="image-rendering: pixelated;" />
 </p>
 
 A flexible, scriptable Python tool for batch-generating composite images from layered PNGs, with support for anchor positioning, scaling, offsets, and customizable output filenames.
