@@ -28,15 +28,9 @@ pip install pillow
 
 ## Usage
 1. **Configure your layers** in a JSON file (see example below).
-2. **Run the script:**
+2. **Run regolith:**
    ```bash
-   python image_mixer.py
-   ```
-   By default, the script uses multiple CPU threads to generate images in parallel. If you want to limit the number of threads (for example, to avoid overloading your system), set the `IMAGE_MIXER_THREADS` environment variable:
-   ```bash
-   set IMAGE_MIXER_THREADS=4  # Windows
-   export IMAGE_MIXER_THREADS=4  # Linux/macOS
-   python image_mixer.py
+   regolith run
    ```
 3. **Find your output images** in the specified output folder.
 
@@ -46,7 +40,7 @@ pip install pillow
   "image_mixers": [
     {
       "output_folder": "RP/textures/output/",
-      "output_template": "output_{index}_{layer1}_{layer2}.png",
+      "output_template": "icon_{index}_{layer1}_{layer2}.png",
       "layers": [
         { "path": "RP/textures/background.png", "offset": [0, 0] },
         { "path": "RP/textures/frames", "offset": [0, 0] },
@@ -80,9 +74,6 @@ pip install pillow
 - The script computes all possible combinations of the provided layers (cartesian product).
 - For each combination, it overlays the images in order, using anchor, scaling, and offset for placement.
 - Image generation is parallelized using multithreading for speed.
-- The output filename is generated from the template and saved in the output folder.
-- The script computes all possible combinations of the provided layers (cartesian product).
-- For each combination, it overlays the images in order, using anchor, scaling, and offset for placement.
 - The output filename is generated from the template and saved in the output folder.
 
 ## License
