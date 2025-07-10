@@ -4,10 +4,6 @@ import itertools
 from pathlib import Path
 from PIL import Image
 import concurrent.futures
-try:
-    from tqdm import tqdm
-except ImportError:
-    tqdm = None
 
 # -------------------------------------------------------------------------------------- #
 def generate_combinations(layers):
@@ -124,21 +120,11 @@ def generate_images(image_mixer):
                 print("Aborted by user.")
                 return
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        if tqdm:
-            futures = [
-                executor.submit(process_combination, idx, combination, output_template, output_folder)
-                for idx, combination in enumerate(layer_combinations)
-            ]
-            for f in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc="Generating images"):
-                f.result()
-        else:
-            futures = [
-                executor.submit(process_combination, idx, combination, output_template, output_folder)
-                for idx, combination in enumerate(layer_combinations)
-            ]
-            concurrent.futures.wait(futures)
-        if tqdm is None:
-            print("(Install tqdm for a progress bar: pip install tqdm)")
+        futures = [
+            executor.submit(process_combination, idx, combination, output_template, output_folder)
+            for idx, combination in enumerate(layer_combinations)
+        ]
+        concurrent.futures.wait(futures)
 
 # -------------------------------------------------------------------------------------- #
 if __name__ == "__main__":
