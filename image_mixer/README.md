@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="100%" alt="Regolith Image Mixer Banner" src="https://github.com/user-attachments/assets/6dc74a07-5d73-4091-9fff-59262e44e4c7" />
+  <img src="https://github.com/user-attachments/assets/6dc74a07-5d73-4091-9fff-59262e44e4c7" alt="Regolith Image Mixer Banner" style="image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; max-width: 600px;" />
 </p>
 
 A flexible, scriptable Python tool for batch-generating composite images from layered PNGs, with support for anchor positioning, scaling, offsets, and customizable output filenames.
@@ -88,10 +88,10 @@ Replace these placeholders with your own screenshots!
 -->
 
 ### Example: Input Folder Structure
-<img width="100%" alt="1" src="https://github.com/user-attachments/assets/c21b9460-e054-4b88-9921-f07738cf9899" />
-<img width="100%" alt="2" src="https://github.com/user-attachments/assets/f9d6e2ea-0226-4ee8-b129-802dd8d796d0" />
+<img src="https://github.com/user-attachments/assets/c21b9460-e054-4b88-9921-f07738cf9899" alt="1" style="image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; max-width: 600px;" />
+<img src="https://github.com/user-attachments/assets/f9d6e2ea-0226-4ee8-b129-802dd8d796d0" alt="2" style="image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; max-width: 600px;" />
 ### Example: Output Images (After Running Script)
-<img width="100%" alt="3" src="https://github.com/user-attachments/assets/71738963-fc10-4ad4-adab-d437dc59defd" />
+<img src="https://github.com/user-attachments/assets/71738963-fc10-4ad4-adab-d437dc59defd" alt="3" style="image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; max-width: 600px;" />
 
 ---
 
