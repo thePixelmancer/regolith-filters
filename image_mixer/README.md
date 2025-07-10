@@ -9,7 +9,7 @@ This script is ideal for creating many composite image combinations from a few i
 - Combining texture variants for resource packs, modding, or asset pipelines
 - Automating the creation of image sets for GUIs, previews, or batch art tasks
 
-## Features
+- Fast: Uses multithreading to generate images in parallel for much faster batch processing.
 - Combine multiple image layers (backgrounds, frames, icons, etc.) into new images.
 - Supports both single files and directories of images for each layer.
 - Flexible anchor system: overlays are centered by default, but you can place overlays at corners, edges, or custom offsets.
@@ -30,6 +30,12 @@ pip install pillow
 1. **Configure your layers** in a JSON file (see example below).
 2. **Run the script:**
    ```bash
+   python image_mixer.py
+   ```
+   By default, the script uses multiple CPU threads to generate images in parallel. If you want to limit the number of threads (for example, to avoid overloading your system), set the `IMAGE_MIXER_THREADS` environment variable:
+   ```bash
+   set IMAGE_MIXER_THREADS=4  # Windows
+   export IMAGE_MIXER_THREADS=4  # Linux/macOS
    python image_mixer.py
    ```
 3. **Find your output images** in the specified output folder.
@@ -67,7 +73,14 @@ pip install pillow
   - Object with `width` and `height` for absolute pixel size (e.g. `{ "width": 64, "height": 32 }`)
 - **resample** (optional): Scaling method: `nearest` (default), `bilinear`, `bicubic`, `lanczos`, `box`, or `hamming`.
 
+- The script computes all possible combinations of the provided layers (cartesian product).
+- For each combination, it overlays the images in order, using anchor, scaling, and offset for placement.
+- The output filename is generated from the template and saved in the output folder.
 ## How It Works
+- The script computes all possible combinations of the provided layers (cartesian product).
+- For each combination, it overlays the images in order, using anchor, scaling, and offset for placement.
+- Image generation is parallelized using multithreading for speed.
+- The output filename is generated from the template and saved in the output folder.
 - The script computes all possible combinations of the provided layers (cartesian product).
 - For each combination, it overlays the images in order, using anchor, scaling, and offset for placement.
 - The output filename is generated from the template and saved in the output folder.
