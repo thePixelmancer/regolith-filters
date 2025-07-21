@@ -1,6 +1,6 @@
 {
   "description": "Automatically converts aseprite textures .png, spritesheets or frames.",
-  "exportData": true,
+  "exportData": false,
   "filters": [
       {
           "runWith": "python",

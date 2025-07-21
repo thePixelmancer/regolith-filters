@@ -1,77 +1,143 @@
-from pathlib import Path  # Import the Path class for cleaner path handling.
-import json
+from pathlib import Path
 import subprocess
 import shutil
+import sys
+import json
+
+# Constants
+ASEPRITE_EXTENSIONS = [".ase", ".aseprite"]
+DEFAULT_CONFIG = {
+    "aseprite_exe_path": "C:/Program Files/Aseprite/aseprite.exe",
+    "spritesheet_type": "vertical",
+}
 
 
-# Load the configuration JSON file
 def load_config():
-    with Path("data/config.json").open() as file:
-        config = json.load(file)
-        # Check for Aseprite installation
-        if shutil.which("aseprite"):
-            config["aseprite_exe_path"] = shutil.which("aseprite")
-            print("Aseprite found in PATH.")
-            return config
-        elif Path(config["aseprite_exe_path"]).is_file():
-            config["aseprite_exe_path"] = Path(config["aseprite_exe_path"])
-            print(f"Aseprite found at {config['aseprite_exe_path']}.")
-            return config
+    """Load configuration from command line arguments or use defaults."""
+    try:
+        if len(sys.argv) > 1:
+            config = json.loads(sys.argv[1])
         else:
-            print(f"Aseprite installation not found!")
-            return None
+            config = DEFAULT_CONFIG.copy()
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON configuration: {e}")
+        return None
+
+    # Check for Aseprite installation
+    aseprite_path = shutil.which("aseprite")
+    if aseprite_path:
+        config["aseprite_exe_path"] = aseprite_path
+        print("Aseprite found in PATH.")
+        return config
+    elif (
+        config.get("aseprite_exe_path") and Path(config["aseprite_exe_path"]).is_file()
+    ):
+        print(f"Aseprite found at {config['aseprite_exe_path']}.")
+        return config
+    else:
+        print("Aseprite installation not found!")
+        return None
+
+
+def convert_atlas_layers(imgpath: Path, aseprite_exe: str) -> list[str]:
+    """Convert Aseprite atlas file to separate layer PNGs."""
+    base_name = imgpath.stem.replace("_atlas", "")
+    command = [
+        aseprite_exe,
+        "-b",  # Run in batch mode (no GUI)
+        str(imgpath),  # Input .ase or .aseprite file
+        "--split-layers",  # Export each layer separately
+        "--trim",  # Crop away transparent pixels
+        "--save-as",
+        f"{imgpath.parent / base_name}_{'{layer}'}.png",  # Export with layer name
+    ]
+    print(f"[Atlas] Exporting {imgpath.name}")
+    return command
+
+
+def convert_frames(imgpath: Path, aseprite_exe: str) -> list[str]:
+    """Convert Aseprite frames file to separate frame PNGs."""
+    frame_path = imgpath.parent / imgpath.stem.replace("_frames", "")
+    command = [
+        aseprite_exe,
+        "-b",  # Run in batch mode (no GUI)
+        str(imgpath),  # Input .ase or .aseprite file
+        "--save-as",
+        f"{frame_path}_{'{frame}'}.png",  # Export numbered frames
+    ]
+    print(f"[Frames] Exporting {imgpath.name}")
+    return command
+
+
+def convert_spritesheet(
+    imgpath: Path, aseprite_exe: str, spritesheet_type: str
+) -> list[str]:
+    """Convert Aseprite file to a spritesheet."""
+    command = [
+        aseprite_exe,
+        "-b",  # Run in batch mode (no GUI)
+        str(imgpath),  # Input .ase or .aseprite file
+        "--sheet",  # Export as spritesheet
+        str(imgpath.with_suffix(".png")),  # Output path
+        "--sheet-type",
+        spritesheet_type,  # Make it a vertical spritesheet
+    ]
+    print(f"[Spritesheet] Exporting {imgpath.name}")
+    return command
+
+
+def run_aseprite_command(command: list[str], imgpath: Path) -> None:
+    """Execute the Aseprite command and handle errors."""
+    try:
+        subprocess.run(command, check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to convert {imgpath}: {e}")
+        if e.stderr:
+            print(f"Error details: {e.stderr}")
+    except FileNotFoundError:
+        print(f"Aseprite executable not found at: {command[0]}")
 
 
 def convert_aseprite(imgpath: Path, config: dict) -> None:
-    # If the has "_frames" in its name, output frames as separate PNGs
-    if "_frames" in imgpath.stem:
-        # Remove "_frames" from the file name and create the output folder
-        frame_path = imgpath.parent / imgpath.stem.replace("_frames", "")
+    """Convert Aseprite files based on their naming convention."""
+    aseprite_exe = config["aseprite_exe_path"]
 
-        # Export each frame as a separate PNG inside the folder with simple numbering
-        command = [
-            config["aseprite_exe_path"],
-            "-b",  # Run in batch mode (no GUI)
-            str(imgpath),  # Input .ase or .aseprite file
-            "--save-as",
-            f"{frame_path}_{'{frame}'}.png",  # Export numbered frames
-        ]
-        print(f"Exporting frames of {imgpath}.")
-
+    # Determine conversion type and get the appropriate command
+    if imgpath.stem.endswith("_atlas"):
+        command = convert_atlas_layers(imgpath, aseprite_exe)
+    elif imgpath.stem.endswith("_frames"):
+        command = convert_frames(imgpath, aseprite_exe)
     else:
-        # If it's animated or layered, export as a vertical spritesheet
-        command = [
-            config["aseprite_exe_path"],
-            "-b",  # Run in batch mode (no GUI)
-            str(imgpath),  # Input .ase or .aseprite file
-            "--sheet",  # Export as spritesheet
-            str(imgpath.with_suffix(".png")),  # Output path
-            "--sheet-type",
-            config["spritesheet_type"],  # Make it a vertical spritesheet
-        ]
-        print(f"Exporting file {imgpath} as a spritesheet.")
+        # Everything is a spritesheet even with 1 frame
+        spritesheet_type = config.get("spritesheet_type", "vertical")
+        command = convert_spritesheet(imgpath, aseprite_exe, spritesheet_type)
 
-    # Run the command
-    try:
-        subprocess.run(
-            command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to convert {imgpath}: {e}")
+    # Execute the command
+    run_aseprite_command(command, imgpath)
 
 
-# EXECUTE SCRIPT
-if __name__ == "__main__":
+def main():
+    """Process all Aseprite files in the current directory and subdirectories."""
     config = load_config()
-    # Check for issues in the configuration
-    if config:
+    if not config:
+        return
 
-        # Use rglob to recursively search for files in all subdirectories.
-        for imgpath in Path(".").rglob("*"):
+    # Use rglob to recursively search for Aseprite files
+    aseprite_files = []
+    for extension in ASEPRITE_EXTENSIONS:
+        aseprite_files.extend(Path(".").rglob(f"*{extension}"))
 
-            # Check if the current item is a file.
-            if imgpath.is_file():
-                # Handle Aseprite files
-                if imgpath.suffix in [".ase", ".aseprite"]:
-                    convert_aseprite(imgpath, config)
-                    imgpath.unlink()  # Delete the original file.
+    if not aseprite_files:
+        print("No Aseprite files found.")
+        return
+
+    for imgpath in aseprite_files:
+        convert_aseprite(imgpath, config)
+        try:
+            imgpath.unlink()  # Delete the original file
+        except OSError as e:
+            print(f"Failed to delete {imgpath}: {e}")
+
+
+if __name__ == "__main__":
+    main()

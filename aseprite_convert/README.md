@@ -1,6 +1,16 @@
-# Aseprite Converter
+# Aseprite Conver## Configuration
 
-This script converts Aseprite files (`.ase` or `.aseprite`) from your RP folder - into PNG files. If the Aseprite file is animated, it will be exported as a vertical spritesheet. If the file has `_frames` in its name, a folder will be created containing separate numbered PNG files.
+The script accepts configuration via command line JSON or uses sensible defaults. You can also modify the default configuration in the script itself.
+
+Default configuration:
+```json
+{
+    "aseprite_exe_path": "C:/Program Files/Aseprite/aseprite.exe",
+    "spritesheet_type": "vertical"
+}
+```
+
+Available spritesheet types: `horizontal`, `vertical`, `rows`, `columns`, `packed`script converts Aseprite files (`.ase` or `.aseprite`) from your RP folder into PNG files with different export modes based on file naming conventions. The script supports atlas layers, frame sequences, and spritesheets.
 
 INPUT
 
@@ -13,7 +23,7 @@ OUTPUT
 
 ## Prerequisites
 
-To use this script, you need to have [Aseprite](https://aseprite.org/) installed on your system. Make sure the path to the Aseprite executable is correctly set in the `config.json` file or added to your system's PATH as `aseprite.exe`.
+To use this script, you need to have [Aseprite](https://aseprite.org/) installed on your system. The script will automatically detect Aseprite if it's in your system PATH, or you can specify the path in the configuration.
 
 ## Configuration
 
@@ -28,18 +38,51 @@ Here’s a sample structure of the `config.json`:
 }
 ```
 
-## File Output
+## Export Modes
 
-- **Regular Aseprite Files**: If the Aseprite file is animated, it will be exported as a PNG spritesheet. The script will create a vertical spritesheet by default. You can change the orientation in the `config.json`.
+The script determines the export mode based on the filename:
 
-- **Files with `_frames` in the Name**: If the Aseprite file has `_frames` in its name, a folder will be created with the same name but without `_frames`. Inside this folder, each frame will be exported as separate numbered PNG file.
+### Atlas Mode (`filename_atlas.ase`)
+- **Trigger**: Filename ends with `_atlas`
+- **Output**: Each layer exported as a separate cropped PNG
+- **Example**: `red_maple_atlas.ase` → `red_maple_log.png`, `red_maple_leaves.png`, etc.
+- **Features**: Automatic trimming of transparent pixels
+- **Important**: Atlas conversion works by **layers**, not image coordinates. Each texture must be on its own separate layer in the Aseprite file. The script will export and trim each layer individually. This allows users to specify the exact name of each texture by naming the layers appropriately.
+
+### Frames Mode (`filename_frames.ase`)
+- **Trigger**: Filename ends with `_frames`
+- **Output**: Each frame exported as a separate numbered PNG
+- **Example**: `character_walk_frames.ase` → `character_walk_0.png`, `character_walk_1.png`, etc.
+
+### Spritesheet Mode (default)
+- **Trigger**: Any other filename
+- **Output**: Single PNG spritesheet (vertical by default)
+- **Example**: `animation.ase` → `animation.png`
+- **Features**: Configurable orientation via `spritesheet_type`
 
 ## Usage
 
-1. Install the filter
-2. Place aseprite files in your RP folder
-3. ???
-4. Profit
+1. Install the filter in your Regolith project
+2. Place Aseprite files in your RP folder using the naming conventions above
+3. Run the filter
+4. Original `.ase` files are automatically deleted after successful conversion
+
+## Features
+
+- **Automatic Aseprite Detection**: Finds Aseprite in PATH or uses configured path
+- **Smart File Processing**: Only processes `.ase` and `.aseprite` files
+- **Progress Feedback**: Clear console output with conversion type indicators
+- **Error Handling**: Comprehensive error reporting for failed conversions
+- **Modular Design**: Separate functions for each conversion type
+
+## Output Messages
+
+The script provides clear feedback during processing:
+```
+[Atlas] Exporting red_maple_atlas.ase
+[Frames] Exporting character_walk_frames.ase
+[Spritesheet] Exporting background.ase
+```
 
 ## Acknowledgments
 

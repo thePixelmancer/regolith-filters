@@ -1,12 +1,12 @@
 {
 	"author": "Pixelmancer",
-	"name": "aseprite_convert_test",
+	"name": "test",
 	"packs": {
 		"behaviorPack": "./packs/BP",
 		"resourcePack": "./packs/RP"
 	},
 	"regolith": {
-		"dataPath": "./data",
+		"dataPath": "./packs/data",
 		"filterDefinitions": {
 			"aseprite_convert": {
 				"runWith": "python",
@@ -21,7 +21,11 @@
 				},
 				"filters": [
 					{
-						"filter": "aseprite_convert"
+						"filter": "aseprite_convert",
+						"settings": {
+							"aseprite_exe_path": "C:/Program Files/Aseprite/aseprite.exe",
+							"spritesheet_type": "vertical"
+						}
 					}
 				]
 			}
