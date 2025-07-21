@@ -1,0 +1,11 @@
+item.apple=apple
+block.stone=Stone
+block.dirt=Dirt
+block.grass=Grass Block
+entity.zombie=Zombie
+entity.skeleton=Skeleton
+item.iron_sword=Iron Sword
+item.diamond=Diamond
+gui.done=Done
+gui.cancel=Cancel
+message.welcome=Welcome to Minecraft!
