@@ -1,4 +1,4 @@
-# Regolith Filters Collection
+# Pixelmancer's Regolith Filters
 
 A curated collection of custom Regolith filters for Minecraft Bedrock Edition development. These filters help automate common tasks, streamline workflows, and enhance your Bedrock Edition project development experience.
 
@@ -89,9 +89,6 @@ regolith install fetcher
 regolith install image_mixer
 regolith install mclocalize
 regolith install replacements
-
-# Or clone the entire repository
-git clone https://github.com/thePixelmancer/regolith-filters.git
 ```
 
 ### Usage
