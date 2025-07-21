@@ -1,5 +1,9 @@
 # mclocalize
 
+> **Warning:** This filter uses Google Translate (or other machine translators) and may not always translate everything fully or accurately. Mistakes, awkward phrasing, or untranslated text can occur. Always review and edit translations as needed.
+>
+> **Recommended usage:** This filter is best used as a one-time tool at the end of development to quickly generate initial translations for your project. For best results, have a fluent speaker review the output before release.
+
 A Minecraft language file translation filter for Regolith.
 
 ## Features
