@@ -1,4 +1,4 @@
-# Aseprite Conver## Configuration
+# Aseprite Convert Configuration
 
 The script accepts configuration via command line JSON or uses sensible defaults. You can also modify the default configuration in the script itself.
 
