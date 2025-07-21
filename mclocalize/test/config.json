@@ -1,0 +1,34 @@
+{
+  "author": "Pixelmancer",
+  "name": "test",
+  "packs": {
+    "behaviorPack": "./packs/BP",
+    "resourcePack": "./packs/RP"
+  },
+  "regolith": {
+    "dataPath": "./packs/data",
+    "filterDefinitions": {
+      "mclocalize": {
+        "runWith": "python",
+        "script": "../mclocalize.py"
+      }
+    },
+    "profiles": {
+      "default": {
+        "export": {
+          "readOnly": true,
+          "target": "local"
+        },
+        "filters": [
+          {
+            "filter": "mclocalize",
+						"settings": {
+							"source_file": "en_US.lang",
+							"target_languages": ["es", "fr", "de"]
+						}
+          }
+        ]
+      }
+    }
+  }
+}
