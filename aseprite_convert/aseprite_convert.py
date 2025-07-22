@@ -125,7 +125,7 @@ def main():
     # Use rglob to recursively search for Aseprite files
     aseprite_files = []
     for extension in ASEPRITE_EXTENSIONS:
-        aseprite_files.extend(Path(".").rglob(f"*{extension}"))
+        aseprite_files.extend(Path("RP").rglob(f"*{extension}"))
 
     if not aseprite_files:
         print("No Aseprite files found.")
