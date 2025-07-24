@@ -1,0 +1,23 @@
+{
+  "format_version": "1.12",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "tsu_brm:void_crystal"
+    },
+    "pattern": [
+      "FF",
+      "FF"
+    ],
+    "key": {
+      "F": {
+        "item": "tsu_brm:void_fragment"
+      }
+    },
+    "result": {
+      "item": "tsu_brm:void_crystal"
+    },
+    "tags": [
+      "crafting_table"
+    ]
+  }
+}

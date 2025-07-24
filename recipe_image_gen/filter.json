@@ -1,0 +1,11 @@
+{
+  "description": "Generates recipe images based on background and data",
+  "exportData": false,
+  "filters": [
+      {
+          "runWith": "python",
+          "script": "./recipe_image_gen.py",
+          "name": "recipe_image_gen"
+      }
+  ]
+}
