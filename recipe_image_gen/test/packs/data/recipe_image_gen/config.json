@@ -1,0 +1,21 @@
+{
+  "recipe_image_generators": [
+    {
+      "type": "crafting_table",
+      "background": "data/recipe_image_gen/vanilla.png",
+      "scale": 1,
+      "slots": [
+        { "name": "slot_0", "position": [0, 0] },
+        { "name": "slot_1", "position": [16, 0] },
+        { "name": "slot_2", "position": [32, 0] },
+        { "name": "slot_3", "position": [0, 16] },
+        { "name": "slot_4", "position": [16, 16] },
+        { "name": "slot_5", "position": [32, 16] },
+        { "name": "slot_6", "position": [0, 32] },
+        { "name": "slot_7", "position": [16, 32] },
+        { "name": "slot_8", "position": [32, 32] },
+        { "name": "recipe_result", "position": [64, 16] }
+      ]
+    }
+  ]
+}

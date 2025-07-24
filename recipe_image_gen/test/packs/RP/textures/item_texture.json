@@ -1,0 +1,12 @@
+{
+  "resource_pack_name": "pack.name",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "tsu_brm.void_crystal": {
+      "textures": "textures/items/void_crystal"
+    },
+    "tsu_brm.void_fragment": {
+      "textures": "textures/items/void_fragment"
+    }
+  }
+}
