@@ -1,6 +1,6 @@
 {
   "description": "Generates recipe images based on background and data",
-  "exportData": false,
+  "exportData": true,
   "filters": [
       {
           "runWith": "python",
