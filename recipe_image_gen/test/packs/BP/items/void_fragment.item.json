@@ -8,7 +8,11 @@
 			}
 		},
 		"components": {
-			"minecraft:icon": "tsu_brm.void_fragment",
+			"minecraft:icon": {
+				"textures": {
+					"default": "tsu_brm.void_fragment"
+				}
+			},
 			"minecraft:max_stack_size": 64
 		}
 	}
