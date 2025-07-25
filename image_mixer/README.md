@@ -67,13 +67,14 @@ You can control how image combinations are generated using the `combination_mode
 
 - **cartesian** (default): All possible combinations of all layers (cartesian product).
   - Example: 2 backgrounds × 3 frames × 3 icons = 18 images.
-- **zip**: Layers are matched by index (like Python's `zip`).
+**zip**: Layers are matched by index (like Python's `zip`).
   - Single-image layers are automatically repeated (broadcast) to match the length of the longest layer.
   - Example: If you have 1 background, 3 frames, and 3 icons, the background is used for each frame+icon pair, producing 3 images:
     - (background, frame0, icon0)
     - (background, frame1, icon1)
     - (background, frame2, icon2)
   - If a layer has a number of images that is not 1 or the same as the longest layer, an error is raised.
+  - **Tip:** Zip mode is best used when you define image paths as a list for each layer, so you have full control over which images are combined together in each output.
 
 **Example zip mode config:**
 ```jsonc
