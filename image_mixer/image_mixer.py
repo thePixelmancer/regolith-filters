@@ -1,4 +1,3 @@
-
 import json
 import itertools
 from pathlib import Path
@@ -6,43 +5,129 @@ from PIL import Image
 import concurrent.futures
 
 # -------------------------------------------------------------------------------------- #
-def generate_combinations(layers):
+
+
+def cartesian_combinations(all_layers):
     """
-    For each layer in the config, build a list of possible layer variants.
+    Generate all possible combinations of layer variants using the cartesian product.
+
+    Args:
+        all_layers (list[list[dict]]): List of lists, each containing dicts for each variant of a layer.
+
+    Returns:
+        list[tuple[dict, ...]]: List of tuples, each tuple is a combination of one variant from each layer.
+    """
+    return list(itertools.product(*all_layers))
+
+
+def zip_combinations(all_layers):
+    """
+    Generate combinations by matching layer variants by index (like Python's zip),
+    broadcasting single-image layers to match the length of the longest layer.
+
+    Args:
+        all_layers (list[list[dict]]): List of lists, each containing dicts for each variant of a layer.
+
+    Returns:
+        list[tuple[dict, ...]]: List of tuples, each tuple is a combination of one variant from each layer.
+
+    Raises:
+        ValueError: If a layer has a number of variants that is not 1 or the same as the longest layer.
+    """
+    max_len = max(len(layer) for layer in all_layers)
+    zipped_layers = []
+    for layer in all_layers:
+        if len(layer) == 1:
+            zipped_layers.append(layer * max_len)
+        elif len(layer) == max_len:
+            zipped_layers.append(layer)
+        else:
+            raise ValueError(
+                f"Layer with {len(layer)} images cannot be zipped to length {max_len}."
+            )
+    return [
+        tuple(zipped_layers[j][i] for j in range(len(zipped_layers)))
+        for i in range(max_len)
+    ]
+
+
+def collect_all_layers(layers):
+    """
+    For each layer in the config, build a list of possible layer variants (dicts with settings).
     If a layer path is a directory, include all PNG files in that directory as variants.
-    Returns a list of all possible combinations (cartesian product) of layers.
+    If a layer path is a list, treat each entry as a file path variant.
+
+    Args:
+        layers (list[dict]): List of layer config dicts.
+
+    Returns:
+        list[list[dict]]: List of lists, each containing dicts for each variant of a layer.
     """
     all_layers = []
     for layer in layers:
-        layer_path = Path(layer["path"])
-        # Collect all relevant properties to copy to each file entry
+        layer_path = layer["path"]
         layer_props = {
             "offset": layer.get("offset", [0, 0]),
             "blend_mode": layer.get("blend_mode", "normal"),
             "anchor": layer.get("anchor", "center"),
             "scale": layer.get("scale", None),
             "resample": layer.get("resample", None),
-            "suffix": layer.get("suffix", ""),
         }
-        if layer_path.is_dir():
-            # If the layer is a directory, add each PNG file as a variant
+        if isinstance(layer_path, list):
+            # List of file paths
             final_layer = [
-                dict(layer_props, path=str(file), suffix=f"_{file.stem}")
-                for file in layer_path.glob("*.png")
+                dict(layer_props, path=Path(p))
+                for p in layer_path
             ]
         else:
-            # If the layer is a single file, just add it as a single variant
-            final_layer = [dict(layer_props, path=str(layer_path))]
+            layer_path = Path(layer_path)
+            if layer_path.is_dir():
+                final_layer = [
+                    dict(layer_props, path=file)
+                    for file in layer_path.glob("*.png")
+                ]
+            else:
+                final_layer = [dict(layer_props, path=layer_path)]
         all_layers.append(final_layer)
-    # Return all possible combinations of layers (cartesian product)
-    return list(itertools.product(*all_layers))
+        print(all_layers)
+    return all_layers
+
+
+def generate_combinations(layers, combination_mode="cartesian"):
+    """
+    Generate combinations of layers according to the selected mode.
+
+    Args:
+        layers (list[dict]): List of layer config dicts.
+        combination_mode (str): 'cartesian' (default) for all possible combinations,
+            or 'zip' to match layers by index, broadcasting single-image layers as needed.
+
+    Returns:
+        list[tuple[dict, ...]]: List of tuples, each tuple is a combination of one variant from each layer.
+    """
+    all_layers = collect_all_layers(layers)
+    if combination_mode == "zip":
+        return zip_combinations(all_layers)
+    else:
+        return cartesian_combinations(all_layers)
+
 
 def process_combination(idx, combination, output_template, output_folder):
+    """
+    Given a combination of layer variants, composite the images in order and save the result.
+
+    Args:
+        idx (int): Index of the combination (used for output filename).
+        combination (tuple[dict, ...]): Tuple of layer variant dicts for this image.
+        output_template (str): Output filename template, e.g. 'image_{index}_{layer0}_{layer1}.png'.
+        output_folder (Path): Path to the output directory.
+    """
     base_layer = combination[0]
     base_img = Image.open(base_layer["path"]).convert("RGBA")
     layer_names = {}
     for i, layer in enumerate(combination):
-        layer_names[f"layer{i}"] = Path(layer["path"]).stem
+        # layer["path"] is always a Path object now
+        layer_names[f"layer{i}"] = layer["path"].stem
     for layer in combination[1:]:
         overlay_img = Image.open(layer["path"]).convert("RGBA")
         base_w, base_h = base_img.size
@@ -62,15 +147,21 @@ def process_combination(idx, combination, output_template, output_folder):
             if isinstance(scale, (int, float)):
                 overlay_w = int(overlay_w * scale)
                 overlay_h = int(overlay_h * scale)
-                overlay_img = overlay_img.resize((overlay_w, overlay_h), resample=resample_method)
+                overlay_img = overlay_img.resize(
+                    (overlay_w, overlay_h), resample=resample_method
+                )
             elif isinstance(scale, (list, tuple)) and len(scale) == 2:
                 overlay_w = int(overlay_w * scale[0])
                 overlay_h = int(overlay_h * scale[1])
-                overlay_img = overlay_img.resize((overlay_w, overlay_h), resample=resample_method)
+                overlay_img = overlay_img.resize(
+                    (overlay_w, overlay_h), resample=resample_method
+                )
             elif isinstance(scale, dict):
                 overlay_w = int(scale.get("width", overlay_w))
                 overlay_h = int(scale.get("height", overlay_h))
-                overlay_img = overlay_img.resize((overlay_w, overlay_h), resample=resample_method)
+                overlay_img = overlay_img.resize(
+                    (overlay_w, overlay_h), resample=resample_method
+                )
         else:
             overlay_w, overlay_h = overlay_img.size
 
@@ -97,34 +188,51 @@ def process_combination(idx, combination, output_template, output_folder):
     out_path = Path(output_folder) / filename
     base_img.save(out_path)
 
+
 def generate_images(image_mixer):
     """
-    For a given image_mixer config, generate all image combinations and save them.
-    Each combination overlays the layers in order, using anchor and offset for placement.
+    For a given image_mixer config, generate and save all composite images.
+
+    Each combination overlays the layers in order, using anchor, scaling, and offset for placement.
     Output filenames are built from a template with variables for index and layer names.
+    Supports 'combination_mode': 'cartesian' (default, all possible combinations) or 'zip' (match layers by index).
+
+    Args:
+        image_mixer (dict): Image mixer config dict, must contain 'output_folder', 'output_template', 'layers', and optionally 'combination_mode'.
     """
     output_folder = Path(image_mixer["output_folder"])
     output_folder.mkdir(parents=True, exist_ok=True)
     output_template = image_mixer.get("output_template", "image_{index}.png")
-    layer_combinations = generate_combinations(image_mixer["layers"])
-
+    combination_mode = image_mixer.get("combination_mode", "cartesian")
+    if combination_mode not in ["cartesian", "zip"]:
+        raise ValueError(
+            f"Invalid combination_mode '{combination_mode}'. Must be 'cartesian' or 'zip'."
+        )
+    layer_combinations = generate_combinations(
+        image_mixer["layers"], combination_mode=combination_mode
+    )
 
     total = len(layer_combinations)
     if total > 500:
-        print(f"[WARNING] You are about to generate {total} images. This may heavily load your system.")
+        print(
+            f"[WARNING] You are about to generate {total} images. This may heavily load your system."
+        )
         while True:
             resp = input("Do you want to continue? (Y/N): ").strip().lower()
-            if resp == 'y':
+            if resp == "y":
                 break
-            elif resp == 'n':
+            elif resp == "n":
                 print("Aborted by user.")
                 return
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [
-            executor.submit(process_combination, idx, combination, output_template, output_folder)
+            executor.submit(
+                process_combination, idx, combination, output_template, output_folder
+            )
             for idx, combination in enumerate(layer_combinations)
         ]
         concurrent.futures.wait(futures)
+
 
 # -------------------------------------------------------------------------------------- #
 if __name__ == "__main__":
