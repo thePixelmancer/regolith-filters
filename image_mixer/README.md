@@ -1,3 +1,10 @@
+## Changelog
+
+### 1.2.0 (2025-07-25)
+- You can now specify a list of file paths for a layer's `path` in the config, instead of just a directory or single file. This allows for precise control over which images are used and their order.
+- Added a `zip` mode for combination generation. In `zip` mode, the script takes the first image from each layer and combines them, then the second image from each layer, and so on. If a layer has only one image, it is reused for every combination. In contrast, the default `cartesian` mode creates every possible combination of images from all layers (for example, if you have 2 backgrounds, 3 frames, and 3 icons, you get 2 × 3 × 3 = 18 images, covering every possible mix). Zip mode was added in anticipation of future support for automatically generating data from recipes, making it easier to create comprehensive recipe images.
+- Improved code readability, refactored the codebase, and updated the documentation for clarity and maintainability.
+> **Note:** The original images used for generating composites are never deleted or moved by this script. If you do not want the source images to appear in your final RP (resource pack), simply place them outside your RP folder (for example, in a `data/` or `source/` directory). Only the generated output images will be saved to your specified output folder.
 <p align="center">
  <img width="100%" alt="banner" src="https://github.com/user-attachments/assets/3b42c3dc-2fbf-4659-b170-946c7c2e2a4b" />
 </p>
@@ -43,6 +50,7 @@ pip install pillow
     {
       "output_folder": "RP/textures/output/",
       "output_template": "icon_{index}_{layer1}_{layer2}.png",
+      "combination_mode": "cartesian", // or "zip" (optional, default: "cartesian")
       "layers": [
         { "path": "RP/textures/background.png", "offset": [0, 0] },
         { "path": "RP/textures/frames", "offset": [0, 0] },
@@ -53,6 +61,33 @@ pip install pillow
           "offset": [0, 0]
         }
       ]
+## Combination Modes
+
+You can control how image combinations are generated using the `combination_mode` option in your config:
+
+- **cartesian** (default): All possible combinations of all layers (cartesian product).
+  - Example: 2 backgrounds × 3 frames × 3 icons = 18 images.
+- **zip**: Layers are matched by index (like Python's `zip`).
+  - Single-image layers are automatically repeated (broadcast) to match the length of the longest layer.
+  - Example: If you have 1 background, 3 frames, and 3 icons, the background is used for each frame+icon pair, producing 3 images:
+    - (background, frame0, icon0)
+    - (background, frame1, icon1)
+    - (background, frame2, icon2)
+  - If a layer has a number of images that is not 1 or the same as the longest layer, an error is raised.
+
+**Example zip mode config:**
+```jsonc
+{
+  "output_folder": "RP/textures/output/",
+  "output_template": "icon_{index}_{layer1}_{layer2}.png",
+  "combination_mode": "zip",
+  "layers": [
+    { "path": "RP/textures/background.png" }, // 1 image, will be repeated
+    { "path": "RP/textures/frames" },         // 3 images
+    { "path": "RP/textures/icons" }           // 3 images
+  ]
+}
+```
     }
   ]
 }
@@ -82,10 +117,6 @@ pip install pillow
 MIT
 
 ## Screenshots & Examples
-
-<!--
-Replace these placeholders with your own screenshots!
--->
 
 ### Example: Input Folder Structure
 <img src="https://github.com/user-attachments/assets/c21b9460-e054-4b88-9921-f07738cf9899" alt="1" style="image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; max-width: 600px;" />

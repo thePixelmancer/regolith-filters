@@ -3,6 +3,7 @@
     {
       "output_folder": "RP/textures/",
       "output_template": "filename_{index}_{layer1}_{layer2}.png",
+      "combination_mode": "zip",
       "layers": [
         {
           "path": "RP/textures/background.png",
@@ -10,7 +11,7 @@
           "blend_mode": "normal"
         },
         {
-          "path": "RP/textures/frames",
+          "path": ["RP/textures/frames/blue_frame.png", "RP/textures/frames/red_frame.png", "RP/textures/frames/green_frame.png"],
           "offset": [0, 0],
           "blend_mode": "normal"
         },
