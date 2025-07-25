@@ -65,16 +65,49 @@ pip install pillow
 
 You can control how image combinations are generated using the `combination_mode` option in your config:
 
-- **cartesian** (default): All possible combinations of all layers (cartesian product).
+**cartesian** (default): All possible combinations of all layers (cartesian product).
   - Example: 2 backgrounds × 3 frames × 3 icons = 18 images.
+  
+  ```
+  backgrounds:  [A] [B]
+  frames:       [1] [2] [3]
+  icons:        [X] [Y] [Z]
+
+  Output (cartesian):
+  [A][1][X]  [A][1][Y]  [A][1][Z]
+  [A][2][X]  [A][2][Y]  [A][2][Z]
+  [A][3][X]  [A][3][Y]  [A][3][Z]
+  [B][1][X]  [B][1][Y]  [B][1][Z]
+  [B][2][X]  [B][2][Y]  [B][2][Z]
+  [B][3][X]  [B][3][Y]  [B][3][Z]
+  ```
 **zip**: Layers are matched by index (like Python's `zip`).
   - Single-image layers are automatically repeated (broadcast) to match the length of the longest layer.
   - Example: If you have 1 background, 3 frames, and 3 icons, the background is used for each frame+icon pair, producing 3 images:
-    - (background, frame0, icon0)
-    - (background, frame1, icon1)
-    - (background, frame2, icon2)
+  ```
+  backgrounds:  [A]
+  frames:       [1] [2] [3]
+  icons:        [X] [Y] [Z]
+
+  Output (zip):
+  [A][1][X]
+  [A][2][Y]
+  [A][3][Z]
+  ```
   - If a layer has a number of images that is not 1 or the same as the longest layer, an error is raised.
   - **Tip:** Zip mode is best used when you define image paths as a list for each layer, so you have full control over which images are combined together in each output.
+
+  For example, with lists:
+  ```
+  backgrounds:  [A] [B] [C]
+  frames:       [1] [2] [3]
+  icons:        [X] [Y] [Z]
+
+  Output (zip):
+  [A][1][X]
+  [B][2][Y]
+  [C][3][Z]
+  ```
 
 **Example zip mode config:**
 ```jsonc
