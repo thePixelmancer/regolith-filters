@@ -2,8 +2,8 @@
   "image_mixers": [
     {
       "output_folder": "RP/textures/",
-      "output_template": "filename_{index}_{layer1}_{layer2}.png",
-      "combination_mode": "zip",
+      "output_template": "file{index}_{layer1}_{layer2}_icon.png",
+      "combination_mode": "cartesian",
       "layers": [
         {
           "path": "RP/textures/background.png",
@@ -22,7 +22,7 @@
         {
           "path": [
             "RP/textures/icons/blue.png",
-            "none",
+            "RP/textures/icons/red.png",
             "RP/textures/icons/green.png"
           ],
           "scale": [1, 2],
