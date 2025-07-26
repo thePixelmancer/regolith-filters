@@ -3,6 +3,7 @@ import itertools
 from pathlib import Path
 from PIL import Image
 import concurrent.futures
+import recipe_image_gen as rig
 
 # -------------------------------------------------------------------------------------- #
 RESAMPLE_MAP = {
@@ -13,6 +14,7 @@ RESAMPLE_MAP = {
     "BOX": Image.BOX,
     "HAMMING": Image.HAMMING,
 }
+RECIPE_DATA = rig.get_flattened_recipe_data()
 # -------------------------------------------------------------------------------------- #
 
 
@@ -63,15 +65,44 @@ def zip_combinations(all_layers):
 # -------------------------------------------------------------------------------------- #
 
 
-def is_blank(val):
-    return val in [None, "none", "None", ""]
-
-
 def get_layer_variants(layer):
     """
     Given a layer config dict, return a list of variant dicts for that layer.
     Handles directories, lists, files, and blank variants.
     """
+
+    def is_blank(val):
+        return val in [None, "none", "None", ""]
+
+    def is_variable(val):
+        """
+        Check if a value is a variable placeholder (e.g., "{variable_name}").
+        Only works for strings.
+        """
+        return (
+            isinstance(val, str)
+            and val.startswith("{")
+            and val.endswith("}")
+            and len(val) > 2
+        )
+
+    def replace_variable(varStr):
+        # Example switch-like logic for variable replacement
+        # You can expand this mapping as needed
+        variable_map = {
+            "{shaped_result}": RECIPE_DATA["result"],
+            "{shaped_slot_0}": RECIPE_DATA["slots"][0],
+            "{shaped_slot_1}": RECIPE_DATA["slots"][1],
+            "{shaped_slot_2}": RECIPE_DATA["slots"][2],
+            "{shaped_slot_3}": RECIPE_DATA["slots"][3],
+            "{shaped_slot_5}": RECIPE_DATA["slots"][4],
+            "{shaped_slot_6}": RECIPE_DATA["slots"][5],
+            "{shaped_slot_7}": RECIPE_DATA["slots"][6],
+            "{shaped_slot_8}": RECIPE_DATA["slots"][7],
+        }
+        return variable_map.get(varStr, None)
+
+    # -------------------------------------------------------------------------------------- #
     layer_path = layer["path"]
     layer_props = {
         "offset": layer.get("offset", [0, 0]),
@@ -80,35 +111,45 @@ def get_layer_variants(layer):
         "scale": layer.get("scale", None),
         "resample": layer.get("resample", None),
     }
-    variants = []
 
     def error_invalid_path(path):
         raise FileNotFoundError(
             f"Layer path '{path}' does not exist or is not a valid file/directory."
         )
 
+    def make_variant(path):
+        return {**layer_props, "path": path}
+
+    # -------------------------------------------------------------------------------------- #
+    # Handle blank path
+    if is_blank(layer_path):
+        return [make_variant(None)]
+    # Handle variable replacing
+    if is_variable(layer_path):
+        layer_path = replace_variable(layer_path)
+        if layer_path == None:
+            error_invalid_path(layer_path)
+    # Handle list of paths
     if isinstance(layer_path, list):
+        variants = []
         for entry in layer_path:
             if is_blank(entry):
-                variants.append({**layer_props, "path": None})
+                variants.append(make_variant(None))
+                continue
+            p = Path(entry)
+            if p.is_file():
+                variants.append(make_variant(p))
             else:
-                p = Path(entry)
-                if p.is_file():
-                    variants.append({**layer_props, "path": p})
-                else:
-                    error_invalid_path(entry)
-    else:
-        if is_blank(layer_path):
-            variants.append({**layer_props, "path": None})
-        else:
-            p = Path(layer_path)
-            if p.is_dir():
-                variants.extend({**layer_props, "path": f} for f in p.glob("*.png"))
-            elif p.is_file():
-                variants.append({**layer_props, "path": p})
-            else:
-                error_invalid_path(layer_path)
-    return variants
+                error_invalid_path(entry)
+        return variants
+
+    # Handle single path (file or directory)
+    p = Path(layer_path)
+    if p.is_dir():
+        return [make_variant(f) for f in p.glob("*.png")]
+    if p.is_file():
+        return [make_variant(p)]
+    error_invalid_path(layer_path)
 
 
 def expand_layers(layers):
@@ -144,16 +185,6 @@ def process_combination(idx, combination, output_template, output_folder):
         output_template (str): Output filename template, e.g. 'image_{index}_{layer0}_{layer1}.png'.
         output_folder (Path): Path to the output directory.
     """
-    # Open base image
-    base_layer = combination[0]
-    base_img = Image.open(base_layer["path"]).convert("RGBA")
-
-    # Build layer name mapping for output filename
-    layer_names = {
-        f"layer{i}": (layer["path"].stem if layer["path"] else "none")
-        for i, layer in enumerate(combination)
-    }
-
 
     def get_anchor_coords(anchor, base_w, base_h, overlay_w, overlay_h):
         """Return anchor coordinates for overlay placement."""
@@ -192,6 +223,21 @@ def process_combination(idx, combination, output_template, output_folder):
             # else: invalid scale type, ignore scaling
         return img, (overlay_w, overlay_h)
 
+    # Open base image
+    base_layer = combination[0]
+    base_img = Image.open(base_layer["path"]).convert("RGBA")
+    base_scale = base_layer.get("scale", None)
+    if base_scale is not None:
+        base_resample_str = base_layer.get("resample", None)
+        base_resample = RESAMPLE_MAP.get(base_resample_str, Image.NEAREST)
+        resized_base, _ = scale_image(base_img, base_scale, base_resample)
+        base_img = resized_base
+
+    # Build layer name mapping for output filename
+    layer_names = {
+        f"layer{i}": (layer["path"].stem if layer["path"] else "none")
+        for i, layer in enumerate(combination)
+    }
     # Overlay each layer
     for layer in combination[1:]:
         path = layer["path"]
@@ -203,12 +249,16 @@ def process_combination(idx, combination, output_template, output_folder):
         scale = layer.get("scale")
         resample_str = (layer.get("resample") or "nearest").upper()
         resample_method = RESAMPLE_MAP.get(resample_str, Image.NEAREST)
-        overlay_img, (overlay_w, overlay_h) = scale_image(overlay_img, scale, resample_method)
+        overlay_img, (overlay_w, overlay_h) = scale_image(
+            overlay_img, scale, resample_method
+        )
 
         # Calculate anchor and offset
         anchor = layer.get("anchor", "center")
         offset = tuple(layer.get("offset", [0, 0]))
-        anchor_x, anchor_y = get_anchor_coords(anchor, base_w, base_h, overlay_w, overlay_h)
+        anchor_x, anchor_y = get_anchor_coords(
+            anchor, base_w, base_h, overlay_w, overlay_h
+        )
         paste_x = anchor_x + offset[0]
         paste_y = anchor_y + offset[1]
 
@@ -218,7 +268,24 @@ def process_combination(idx, combination, output_template, output_folder):
         base_img = Image.alpha_composite(base_img, temp)
 
     # Save output
-    filename = output_template.format(index=idx, **layer_names)
+    try:
+        filename = output_template.format(index=idx, **layer_names)
+    except KeyError as e:
+        missing = str(e).strip("'")
+        print(
+            f"[WARNING] Output template placeholder '{{{missing}}}' does not match any layer. Skipping placeholder."
+        )
+        # Remove missing placeholder from template and try again
+        import re
+
+        # Remove the missing placeholder (e.g., {layer2}) from the template
+        # Use double braces in regex to avoid f-string brace error
+        pattern = r"\{" + re.escape(missing) + r"\}"
+        filename = re.sub(pattern, "", output_template)
+        try:
+            filename = filename.format(index=idx, **layer_names)
+        except Exception:
+            filename = f"image_{idx}.png"
     out_path = Path(output_folder) / filename
     base_img.save(out_path)
 
