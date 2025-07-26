@@ -60,7 +60,10 @@ def zip_combinations(all_layers):
     ]
 
 
-def collect_all_layers(layers):
+# -------------------------------------------------------------------------------------- #
+
+
+def expand_layers(layers):
     """
     For each layer in the config, build a list of possible layer variants (dicts with settings).
     If a layer path is a directory, include all PNG files in that directory as variants.
@@ -73,6 +76,10 @@ def collect_all_layers(layers):
     Returns:
         list[list[dict]]: List of lists, each containing dicts for each variant of a layer.
     """
+
+    def is_blank(val):
+        return val in [None, "none", "None", ""]
+
     all_layers = []
     for layer in layers:
         layer_path = layer["path"]
@@ -83,26 +90,31 @@ def collect_all_layers(layers):
             "scale": layer.get("scale", None),
             "resample": layer.get("resample", None),
         }
-        if isinstance(layer_path, list):
-            # List of file paths (can include None or invalid paths)
-            final_layer = []
-            for p in layer_path:
-                p_obj = Path(p) if p not in [None, "none", "None", ""] else None
-                if p_obj is not None and p_obj.is_file():
-                    final_layer.append(dict(layer_props, path=p_obj))
-                else:
-                    # Blank variant: no overlay
-                    final_layer.append(dict(layer_props, path=None))
-        else:
-            p = Path(layer_path)
-            if p.is_dir():
-                final_layer = [dict(layer_props, path=f) for f in p.glob("*.png")]
-            elif p.is_file():
-                final_layer = [dict(layer_props, path=p)]
-            else:
-                final_layer = [dict(layer_props, path=None)]
 
-        all_layers.append(final_layer)
+        variants = []
+        if isinstance(layer_path, list):
+            for entry in layer_path:
+                if is_blank(entry):
+                    variants.append({**layer_props, "path": None})
+                else:
+                    p = Path(entry)
+                    if p.is_file():
+                        variants.append({**layer_props, "path": p})
+                    else:
+                        variants.append({**layer_props, "path": None})
+        else:
+            if is_blank(layer_path):
+                variants.append({**layer_props, "path": None})
+            else:
+                p = Path(layer_path)
+                if p.is_dir():
+                    variants.extend({**layer_props, "path": f} for f in p.glob("*.png"))
+                elif p.is_file():
+                    variants.append({**layer_props, "path": p})
+                else:
+                    variants.append({**layer_props, "path": None})
+
+        all_layers.append(variants)
     return all_layers
 
 
@@ -118,7 +130,7 @@ def generate_combinations(layers, combination_mode):
     Returns:
         list[tuple[dict, ...]]: List of tuples, each tuple is a combination of one variant from each layer.
     """
-    all_layers = collect_all_layers(layers)
+    all_layers = expand_layers(layers)
     if combination_mode == "zip":
         return zip_combinations(all_layers)
     else:

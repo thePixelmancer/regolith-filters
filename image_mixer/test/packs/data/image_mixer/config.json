@@ -3,7 +3,7 @@
     {
       "output_folder": "RP/textures/",
       "output_template": "filename_{index}_{layer1}_{layer2}.png",
-      "combination_mode": "cartesian",
+      "combination_mode": "zip",
       "layers": [
         {
           "path": "RP/textures/background.png",
