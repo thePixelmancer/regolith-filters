@@ -49,7 +49,7 @@ def convert_atlas_layers(imgpath: Path, aseprite_exe: str) -> list[str]:
         "--split-layers",  # Export each layer separately
         "--trim",  # Crop away transparent pixels
         "--save-as",
-        f"{imgpath.parent / base_name}_{'{layer}'}.png",  # Export with layer name
+        f"{imgpath.parent / '{layer}'}.png",  # Export with layer name
     ]
     print(f"[Atlas] Exporting {imgpath.name}")
     return command
