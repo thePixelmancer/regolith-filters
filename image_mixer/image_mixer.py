@@ -88,19 +88,23 @@ def get_layer_variants(layer):
 
     def replace_variable(varStr):
         # Example switch-like logic for variable replacement
-        # You can expand this mapping as needed
         variable_map = {
             "{shaped_result}": RECIPE_DATA["result"],
             "{shaped_slot_0}": RECIPE_DATA["slots"][0],
             "{shaped_slot_1}": RECIPE_DATA["slots"][1],
             "{shaped_slot_2}": RECIPE_DATA["slots"][2],
             "{shaped_slot_3}": RECIPE_DATA["slots"][3],
-            "{shaped_slot_5}": RECIPE_DATA["slots"][4],
-            "{shaped_slot_6}": RECIPE_DATA["slots"][5],
-            "{shaped_slot_7}": RECIPE_DATA["slots"][6],
-            "{shaped_slot_8}": RECIPE_DATA["slots"][7],
+            "{shaped_slot_4}": RECIPE_DATA["slots"][4],
+            "{shaped_slot_5}": RECIPE_DATA["slots"][5],
+            "{shaped_slot_6}": RECIPE_DATA["slots"][6],
+            "{shaped_slot_7}": RECIPE_DATA["slots"][7],
+            "{shaped_slot_8}": RECIPE_DATA["slots"][8],
         }
-        return variable_map.get(varStr, None)
+        if varStr not in variable_map:
+            raise KeyError(
+                f"Variable '{varStr}' not found in available variables: {list(variable_map.keys())}"
+            )
+        return variable_map[varStr]
 
     # -------------------------------------------------------------------------------------- #
     layer_path = layer["path"]
@@ -128,7 +132,7 @@ def get_layer_variants(layer):
     if is_variable(layer_path):
         layer_path = replace_variable(layer_path)
         if layer_path == None:
-            error_invalid_path(layer_path)
+            error_invalid_path(layer["path"])
     # Handle list of paths
     if isinstance(layer_path, list):
         variants = []
@@ -176,19 +180,12 @@ def generate_combinations(layers, combination_mode):
 
 
 def process_combination(idx, combination, output_template, output_folder):
-    """
-    Given a combination of layer variants, composite the images in order and save the result.
+    """Composite a combination of image layers and save the result."""
 
-    Args:
-        idx (int): Index of the combination (used for output filename).
-        combination (tuple[dict, ...]): Tuple of layer variant dicts for this image.
-        output_template (str): Output filename template, e.g. 'image_{index}_{layer0}_{layer1}.png'.
-        output_folder (Path): Path to the output directory.
-    """
-
-    def get_anchor_coords(anchor, base_w, base_h, overlay_w, overlay_h):
-        """Return anchor coordinates for overlay placement."""
-        anchor_map = {
+    def get_anchor_offset(anchor, base_size, overlay_size, offset):
+        base_w, base_h = base_size
+        overlay_w, overlay_h = overlay_size
+        anchors = {
             "center": ((base_w - overlay_w) // 2, (base_h - overlay_h) // 2),
             "top_center": ((base_w - overlay_w) // 2, 0),
             "bottom_center": ((base_w - overlay_w) // 2, base_h - overlay_h),
@@ -199,93 +196,81 @@ def process_combination(idx, combination, output_template, output_folder):
             "top_right": (base_w - overlay_w, 0),
             "top_left": (0, 0),
         }
-        return anchor_map.get(anchor, anchor_map["center"])
+        anchor_x, anchor_y = anchors.get(anchor, anchors["center"])
+        return anchor_x + offset[0], anchor_y + offset[1]
 
     def scale_image(img, scale, resample):
-        """
-        Scale an image according to scale (number, [w, h], or {width, height}).
-        Returns the scaled image and its new size.
-        """
-        overlay_w, overlay_h = img.size
+        """Scale an image based on scalar, tuple, or dict format."""
+        w, h = img.size
         if scale is not None:
             if isinstance(scale, (int, float)):
-                overlay_w = int(overlay_w * scale)
-                overlay_h = int(overlay_h * scale)
-                img = img.resize((overlay_w, overlay_h), resample=resample)
+                w, h = int(w * scale), int(h * scale)
             elif isinstance(scale, (list, tuple)) and len(scale) == 2:
-                overlay_w = int(overlay_w * scale[0])
-                overlay_h = int(overlay_h * scale[1])
-                img = img.resize((overlay_w, overlay_h), resample=resample)
+                w, h = int(w * scale[0]), int(h * scale[1])
             elif isinstance(scale, dict):
-                overlay_w = int(scale.get("width", overlay_w))
-                overlay_h = int(scale.get("height", overlay_h))
-                img = img.resize((overlay_w, overlay_h), resample=resample)
-            # else: invalid scale type, ignore scaling
-        return img, (overlay_w, overlay_h)
+                w = int(scale.get("width", w))
+                h = int(scale.get("height", h))
+            img = img.resize((w, h), resample=resample)
+        return img, (w, h)
 
-    # Open base image
+    def safe_open(path):
+        return Image.open(path).convert("RGBA") if path else None
+
+    def get_resample(method):
+        return RESAMPLE_MAP.get((method or "nearest").upper(), Image.NEAREST)
+
+    # --- Prepare base image ---
     base_layer = combination[0]
-    base_img = Image.open(base_layer["path"]).convert("RGBA")
-    base_scale = base_layer.get("scale", None)
-    if base_scale is not None:
-        base_resample_str = base_layer.get("resample", None)
-        base_resample = RESAMPLE_MAP.get(base_resample_str, Image.NEAREST)
-        resized_base, _ = scale_image(base_img, base_scale, base_resample)
-        base_img = resized_base
+    base_img = safe_open(base_layer["path"])
+    if base_img is None:
+        print(f"[ERROR] Base image missing for combination {idx}")
+        return
 
-    # Build layer name mapping for output filename
+    base_img, _ = scale_image(
+        base_img, base_layer.get("scale"), get_resample(base_layer.get("resample"))
+    )
+
+    # --- Overlay remaining layers ---
+    for layer in combination[1:]:
+        overlay = safe_open(layer["path"])
+        if overlay is None:
+            continue
+
+        overlay, size = scale_image(
+            overlay, layer.get("scale"), get_resample(layer.get("resample"))
+        )
+        pos = get_anchor_offset(
+            layer.get("anchor", "center"),
+            base_img.size,
+            size,
+            tuple(layer.get("offset", [0, 0])),
+        )
+
+        temp_layer = Image.new("RGBA", base_img.size, (0, 0, 0, 0))
+        temp_layer.paste(overlay, pos, overlay)
+        base_img = Image.alpha_composite(base_img, temp_layer)
+
+    # --- Format filename ---
     layer_names = {
-        f"layer{i}": (layer["path"].stem if layer["path"] else "none")
+        f"layer{i}": (Path(layer["path"]).stem if layer["path"] else "none")
         for i, layer in enumerate(combination)
     }
-    # Overlay each layer
-    for layer in combination[1:]:
-        path = layer["path"]
-        if path is None:
-            continue  # Skip blank overlays
 
-        overlay_img = Image.open(path).convert("RGBA")
-        base_w, base_h = base_img.size
-        scale = layer.get("scale")
-        resample_str = (layer.get("resample") or "nearest").upper()
-        resample_method = RESAMPLE_MAP.get(resample_str, Image.NEAREST)
-        overlay_img, (overlay_w, overlay_h) = scale_image(
-            overlay_img, scale, resample_method
-        )
-
-        # Calculate anchor and offset
-        anchor = layer.get("anchor", "center")
-        offset = tuple(layer.get("offset", [0, 0]))
-        anchor_x, anchor_y = get_anchor_coords(
-            anchor, base_w, base_h, overlay_w, overlay_h
-        )
-        paste_x = anchor_x + offset[0]
-        paste_y = anchor_y + offset[1]
-
-        # Composite overlay
-        temp = Image.new("RGBA", base_img.size, (0, 0, 0, 0))
-        temp.paste(overlay_img, (paste_x, paste_y), overlay_img)
-        base_img = Image.alpha_composite(base_img, temp)
-
-    # Save output
     try:
         filename = output_template.format(index=idx, **layer_names)
     except KeyError as e:
-        missing = str(e).strip("'")
-        print(
-            f"[WARNING] Output template placeholder '{{{missing}}}' does not match any layer. Skipping placeholder."
-        )
-        # Remove missing placeholder from template and try again
         import re
 
-        # Remove the missing placeholder (e.g., {layer2}) from the template
-        # Use double braces in regex to avoid f-string brace error
+        missing = str(e).strip("'")
+        print(f"[WARNING] Template placeholder {{{missing}}} missing. Stripping it.")
         pattern = r"\{" + re.escape(missing) + r"\}"
-        filename = re.sub(pattern, "", output_template)
+        cleaned_template = re.sub(pattern, "", output_template)
         try:
-            filename = filename.format(index=idx, **layer_names)
+            filename = cleaned_template.format(index=idx, **layer_names)
         except Exception:
             filename = f"image_{idx}.png"
+
+    # --- Save output ---
     out_path = Path(output_folder) / filename
     base_img.save(out_path)
 

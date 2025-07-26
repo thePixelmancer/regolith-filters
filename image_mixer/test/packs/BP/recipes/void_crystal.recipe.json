@@ -4,20 +4,18 @@
     "description": {
       "identifier": "tsu_brm:void_crystal"
     },
-    "pattern": [
-      "FF",
-      "FF"
-    ],
+    "pattern": ["FSF", "SFS", "FSF"],
     "key": {
       "F": {
         "item": "tsu_brm:void_fragment"
+      },
+      "S": {
+        "item": "minecraft:stick"
       }
     },
     "result": {
       "item": "tsu_brm:void_crystal"
     },
-    "tags": [
-      "crafting_table"
-    ]
+    "tags": ["crafting_table"]
   }
 }
