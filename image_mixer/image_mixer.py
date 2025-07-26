@@ -81,8 +81,11 @@ def get_layer_variants(layer):
         "resample": layer.get("resample", None),
     }
     variants = []
+
     def error_invalid_path(path):
-        raise FileNotFoundError(f"Layer path '{path}' does not exist or is not a valid file/directory.")
+        raise FileNotFoundError(
+            f"Layer path '{path}' does not exist or is not a valid file/directory."
+        )
 
     if isinstance(layer_path, list):
         for entry in layer_path:
@@ -141,62 +144,80 @@ def process_combination(idx, combination, output_template, output_folder):
         output_template (str): Output filename template, e.g. 'image_{index}_{layer0}_{layer1}.png'.
         output_folder (Path): Path to the output directory.
     """
+    # Open base image
     base_layer = combination[0]
     base_img = Image.open(base_layer["path"]).convert("RGBA")
-    layer_names = {}
-    for i, layer in enumerate(combination):
-        # layer["path"] is always a Path object or None now
-        layer_names[f"layer{i}"] = layer["path"].stem if layer["path"] else "none"
-    for layer in combination[1:]:
-        if layer["path"] is None:
-            continue  # Skip blank overlays
-        overlay_img = Image.open(layer["path"]).convert("RGBA")
-        base_w, base_h = base_img.size
-        scale = layer.get("scale", None)
-        resample_str = (layer.get("resample") or "nearest").upper()
-        resample_method = RESAMPLE_MAP.get(resample_str, Image.NEAREST)
-        overlay_w, overlay_h = overlay_img.size
+
+    # Build layer name mapping for output filename
+    layer_names = {
+        f"layer{i}": (layer["path"].stem if layer["path"] else "none")
+        for i, layer in enumerate(combination)
+    }
+
+
+    def get_anchor_coords(anchor, base_w, base_h, overlay_w, overlay_h):
+        """Return anchor coordinates for overlay placement."""
+        anchor_map = {
+            "center": ((base_w - overlay_w) // 2, (base_h - overlay_h) // 2),
+            "top_center": ((base_w - overlay_w) // 2, 0),
+            "bottom_center": ((base_w - overlay_w) // 2, base_h - overlay_h),
+            "left_center": (0, (base_h - overlay_h) // 2),
+            "right_center": (base_w - overlay_w, (base_h - overlay_h) // 2),
+            "bottom_left": (0, base_h - overlay_h),
+            "bottom_right": (base_w - overlay_w, base_h - overlay_h),
+            "top_right": (base_w - overlay_w, 0),
+            "top_left": (0, 0),
+        }
+        return anchor_map.get(anchor, anchor_map["center"])
+
+    def scale_image(img, scale, resample):
+        """
+        Scale an image according to scale (number, [w, h], or {width, height}).
+        Returns the scaled image and its new size.
+        """
+        overlay_w, overlay_h = img.size
         if scale is not None:
             if isinstance(scale, (int, float)):
                 overlay_w = int(overlay_w * scale)
                 overlay_h = int(overlay_h * scale)
-                overlay_img = overlay_img.resize(
-                    (overlay_w, overlay_h), resample=resample_method
-                )
+                img = img.resize((overlay_w, overlay_h), resample=resample)
             elif isinstance(scale, (list, tuple)) and len(scale) == 2:
                 overlay_w = int(overlay_w * scale[0])
                 overlay_h = int(overlay_h * scale[1])
-                overlay_img = overlay_img.resize(
-                    (overlay_w, overlay_h), resample=resample_method
-                )
+                img = img.resize((overlay_w, overlay_h), resample=resample)
             elif isinstance(scale, dict):
                 overlay_w = int(scale.get("width", overlay_w))
                 overlay_h = int(scale.get("height", overlay_h))
-                overlay_img = overlay_img.resize(
-                    (overlay_w, overlay_h), resample=resample_method
-                )
-        else:
-            overlay_w, overlay_h = overlay_img.size
+                img = img.resize((overlay_w, overlay_h), resample=resample)
+            # else: invalid scale type, ignore scaling
+        return img, (overlay_w, overlay_h)
 
+    # Overlay each layer
+    for layer in combination[1:]:
+        path = layer["path"]
+        if path is None:
+            continue  # Skip blank overlays
+
+        overlay_img = Image.open(path).convert("RGBA")
+        base_w, base_h = base_img.size
+        scale = layer.get("scale")
+        resample_str = (layer.get("resample") or "nearest").upper()
+        resample_method = RESAMPLE_MAP.get(resample_str, Image.NEAREST)
+        overlay_img, (overlay_w, overlay_h) = scale_image(overlay_img, scale, resample_method)
+
+        # Calculate anchor and offset
         anchor = layer.get("anchor", "center")
         offset = tuple(layer.get("offset", [0, 0]))
-        anchor_map = {
-            "center": lambda: ((base_w - overlay_w) // 2, (base_h - overlay_h) // 2),
-            "top_center": lambda: ((base_w - overlay_w) // 2, 0),
-            "bottom_center": lambda: ((base_w - overlay_w) // 2, base_h - overlay_h),
-            "left_center": lambda: (0, (base_h - overlay_h) // 2),
-            "right_center": lambda: (base_w - overlay_w, (base_h - overlay_h) // 2),
-            "bottom_left": lambda: (0, base_h - overlay_h),
-            "bottom_right": lambda: (base_w - overlay_w, base_h - overlay_h),
-            "top_right": lambda: (base_w - overlay_w, 0),
-            "top_left": lambda: (0, 0),
-        }
-        anchor_x, anchor_y = anchor_map.get(anchor, anchor_map["center"])()
+        anchor_x, anchor_y = get_anchor_coords(anchor, base_w, base_h, overlay_w, overlay_h)
         paste_x = anchor_x + offset[0]
         paste_y = anchor_y + offset[1]
+
+        # Composite overlay
         temp = Image.new("RGBA", base_img.size, (0, 0, 0, 0))
         temp.paste(overlay_img, (paste_x, paste_y), overlay_img)
         base_img = Image.alpha_composite(base_img, temp)
+
+    # Save output
     filename = output_template.format(index=idx, **layer_names)
     out_path = Path(output_folder) / filename
     base_img.save(out_path)
