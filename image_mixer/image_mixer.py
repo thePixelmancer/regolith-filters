@@ -63,6 +63,48 @@ def zip_combinations(all_layers):
 # -------------------------------------------------------------------------------------- #
 
 
+def is_blank(val):
+    return val in [None, "none", "None", ""]
+
+
+def get_layer_variants(layer):
+    """
+    Given a layer config dict, return a list of variant dicts for that layer.
+    Handles directories, lists, files, and blank variants.
+    """
+    layer_path = layer["path"]
+    layer_props = {
+        "offset": layer.get("offset", [0, 0]),
+        "blend_mode": layer.get("blend_mode", "normal"),
+        "anchor": layer.get("anchor", "center"),
+        "scale": layer.get("scale", None),
+        "resample": layer.get("resample", None),
+    }
+    variants = []
+    if isinstance(layer_path, list):
+        for entry in layer_path:
+            if is_blank(entry):
+                variants.append({**layer_props, "path": None})
+            else:
+                p = Path(entry)
+                if p.is_file():
+                    variants.append({**layer_props, "path": p})
+                else:
+                    variants.append({**layer_props, "path": None})
+    else:
+        if is_blank(layer_path):
+            variants.append({**layer_props, "path": None})
+        else:
+            p = Path(layer_path)
+            if p.is_dir():
+                variants.extend({**layer_props, "path": f} for f in p.glob("*.png"))
+            elif p.is_file():
+                variants.append({**layer_props, "path": p})
+            else:
+                variants.append({**layer_props, "path": None})
+    return variants
+
+
 def expand_layers(layers):
     """
     For each layer in the config, build a list of possible layer variants (dicts with settings).
@@ -76,46 +118,7 @@ def expand_layers(layers):
     Returns:
         list[list[dict]]: List of lists, each containing dicts for each variant of a layer.
     """
-
-    def is_blank(val):
-        return val in [None, "none", "None", ""]
-
-    all_layers = []
-    for layer in layers:
-        layer_path = layer["path"]
-        layer_props = {
-            "offset": layer.get("offset", [0, 0]),
-            "blend_mode": layer.get("blend_mode", "normal"),
-            "anchor": layer.get("anchor", "center"),
-            "scale": layer.get("scale", None),
-            "resample": layer.get("resample", None),
-        }
-
-        variants = []
-        if isinstance(layer_path, list):
-            for entry in layer_path:
-                if is_blank(entry):
-                    variants.append({**layer_props, "path": None})
-                else:
-                    p = Path(entry)
-                    if p.is_file():
-                        variants.append({**layer_props, "path": p})
-                    else:
-                        variants.append({**layer_props, "path": None})
-        else:
-            if is_blank(layer_path):
-                variants.append({**layer_props, "path": None})
-            else:
-                p = Path(layer_path)
-                if p.is_dir():
-                    variants.extend({**layer_props, "path": f} for f in p.glob("*.png"))
-                elif p.is_file():
-                    variants.append({**layer_props, "path": p})
-                else:
-                    variants.append({**layer_props, "path": None})
-
-        all_layers.append(variants)
-    return all_layers
+    return [get_layer_variants(layer) for layer in layers]
 
 
 def generate_combinations(layers, combination_mode):
