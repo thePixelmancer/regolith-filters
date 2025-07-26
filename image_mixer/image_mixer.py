@@ -5,6 +5,15 @@ from PIL import Image
 import concurrent.futures
 
 # -------------------------------------------------------------------------------------- #
+RESAMPLE_MAP = {
+    "NEAREST": Image.NEAREST,
+    "BILINEAR": Image.BILINEAR,
+    "BICUBIC": Image.BICUBIC,
+    "LANCZOS": Image.LANCZOS,
+    "BOX": Image.BOX,
+    "HAMMING": Image.HAMMING,
+}
+# -------------------------------------------------------------------------------------- #
 
 
 def cartesian_combinations(all_layers):
@@ -56,6 +65,7 @@ def collect_all_layers(layers):
     For each layer in the config, build a list of possible layer variants (dicts with settings).
     If a layer path is a directory, include all PNG files in that directory as variants.
     If a layer path is a list, treat each entry as a file path variant.
+    If a path is None or not a valid file, it is treated as a "blank" variant (no overlay).
 
     Args:
         layers (list[dict]): List of layer config dicts.
@@ -74,26 +84,29 @@ def collect_all_layers(layers):
             "resample": layer.get("resample", None),
         }
         if isinstance(layer_path, list):
-            # List of file paths
-            final_layer = [
-                dict(layer_props, path=Path(p))
-                for p in layer_path
-            ]
+            # List of file paths (can include None or invalid paths)
+            final_layer = []
+            for p in layer_path:
+                p_obj = Path(p) if p not in [None, "none", "None", ""] else None
+                if p_obj is not None and p_obj.is_file():
+                    final_layer.append(dict(layer_props, path=p_obj))
+                else:
+                    # Blank variant: no overlay
+                    final_layer.append(dict(layer_props, path=None))
         else:
-            layer_path = Path(layer_path)
-            if layer_path.is_dir():
-                final_layer = [
-                    dict(layer_props, path=file)
-                    for file in layer_path.glob("*.png")
-                ]
+            p = Path(layer_path)
+            if p.is_dir():
+                final_layer = [dict(layer_props, path=f) for f in p.glob("*.png")]
+            elif p.is_file():
+                final_layer = [dict(layer_props, path=p)]
             else:
-                final_layer = [dict(layer_props, path=layer_path)]
+                final_layer = [dict(layer_props, path=None)]
+
         all_layers.append(final_layer)
-        print(all_layers)
     return all_layers
 
 
-def generate_combinations(layers, combination_mode="cartesian"):
+def generate_combinations(layers, combination_mode):
     """
     Generate combinations of layers according to the selected mode.
 
@@ -126,22 +139,16 @@ def process_combination(idx, combination, output_template, output_folder):
     base_img = Image.open(base_layer["path"]).convert("RGBA")
     layer_names = {}
     for i, layer in enumerate(combination):
-        # layer["path"] is always a Path object now
-        layer_names[f"layer{i}"] = layer["path"].stem
+        # layer["path"] is always a Path object or None now
+        layer_names[f"layer{i}"] = layer["path"].stem if layer["path"] else "none"
     for layer in combination[1:]:
+        if layer["path"] is None:
+            continue  # Skip blank overlays
         overlay_img = Image.open(layer["path"]).convert("RGBA")
         base_w, base_h = base_img.size
         scale = layer.get("scale", None)
         resample_str = (layer.get("resample") or "nearest").upper()
-        resample_map = {
-            "NEAREST": Image.NEAREST,
-            "BILINEAR": Image.BILINEAR,
-            "BICUBIC": Image.BICUBIC,
-            "LANCZOS": Image.LANCZOS,
-            "BOX": Image.BOX,
-            "HAMMING": Image.HAMMING,
-        }
-        resample_method = resample_map.get(resample_str, Image.NEAREST)
+        resample_method = RESAMPLE_MAP.get(resample_str, Image.NEAREST)
         overlay_w, overlay_h = overlay_img.size
         if scale is not None:
             if isinstance(scale, (int, float)):

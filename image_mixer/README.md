@@ -44,6 +44,23 @@ pip install pillow
 3. **Find your output images** in the specified output folder.
 
 ## Example Configuration
+
+### Note on Empty Layer Variants
+
+If a layer's `path` is set to `None`, an empty string (`""`), or the string `"none"` or `"None"`, or is not a valid file, that variant will be counted as an empty (blank) layer. **The combination will still be generated, but nothing will be overlayed for that layer in that output.**
+
+This allows you to intentionally include empty slots in your combinations. For example:
+
+```jsonc
+{
+  "layers": [
+    {
+      "path": ["icon1.png", "none", "icon2.png"]
+    }
+  ]
+}
+```
+In this example, the second variant will be empty (no overlay), but the output will still be generated for that combination.
 ```jsonc
 {
   "image_mixers": [
