@@ -78,8 +78,18 @@ def get_slot_textures(recipe_data):
 
 def get_flattened_recipe_data():
     final = {
-        "slots": [[],[],[],[],[],[],[],[],[]],  # 9 lists for slot indices 0-8, each sublist means slot[index][recipe_index]
-        "result": [], # List of result textures, one per recipe
+        "slots": [
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+        ],  # 9 lists for slot indices 0-8, each sublist means slot[index][recipe_index]
+        "result": [],  # List of result textures, one per recipe
     }
 
     for recipe in BP.recipes:
@@ -95,4 +105,3 @@ def get_flattened_recipe_data():
                     final["slots"][i].append(None)
 
     return final
-
