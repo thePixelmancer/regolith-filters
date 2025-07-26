@@ -1,33 +1,23 @@
 {
   "image_mixers": [
     {
-      "output_folder": "RP/textures/",
-      "output_template": "file{index}_{layer1}_{layer2}_icon.png",
+      "output_folder": "RP/textures/output/",
+      "output_template": "f{index}_{layer1}_icon.png",
       "combination_mode": "cartesian",
       "layers": [
         {
-          "path": "RP/textures/background.png",
-          "offset": [0, 0],
-          "blend_mode": "normal"
+          "path": "RP/textures/vanilla_recipe_background.png",
+          "blend_mode": "normal",
+          "scale": 2
         },
         {
-          "path": [
-            "RP/textures/frames/blue_frame.png",
-            "RP/textures/frames/red_frame.png",
-            "RP/textures/frames/green_frame.png"
-          ],
-          "offset": [0, 0],
-          "blend_mode": "normal"
-        },
-        {
-          "path": [
-            "RP/textures/icons/blue.png",
-            "RP/textures/icons/red.png",
-            "RP/textures/icons/green.png"
-          ],
-          "scale": [1, 2],
-          "offset": [0, 0],
-          "blend_mode": "normal"
+          "path": "{shaped_result}",
+          "offset": [25, 0],
+          "blend_mode": "normal",
+          "scale": {
+            "width": 32,
+            "height": 32
+          }
         }
       ]
     }
