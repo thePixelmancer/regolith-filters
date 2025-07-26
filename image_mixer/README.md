@@ -1,3 +1,144 @@
+# Recipe Image Creation: Best Practices
+
+**Recipe image creation is intended to be used with the `zip` combination mode.**
+This ensures that each recipe's layers are matched by index, so the correct item icons and slots are combined for each output image. Using `cartesian` mode will generate every possible combination, which is usually not desired for recipes.
+
+**Recommended:** For all layers containing item pictures (such as icons or slot items), always define `scale` as an object with `width` and `height` (e.g., `{"width": 32, "height": 32}`). This guarantees that, even if your item textures are different sizes, they will be resized to fit perfectly into their slots in the final image. This avoids misaligned or oversized icons and ensures a consistent look for all recipe images.
+
+Example layer config for an item icon:
+```jsonc
+{
+  "path": "{shaped_result}",
+  "scale": {"width": 32, "height": 32},
+  "anchor": "top_left",
+  "offset": [25, 0]
+}
+```
+
+---
+# Tutorial: Generating Recipe Images with image_mixer.py
+
+This guide explains how to use `image_mixer.py` to generate recipe images for Minecraft resource packs. It covers setup, configuration, and usage in detail.
+
+## Prerequisites
+
+1. **Python 3.8+** installed on your system.
+2. **Pillow** library for image processing:
+   ```sh
+   pip install pillow
+   ```
+3. Your workspace should have the following structure (simplified):
+   ```
+   image_mixer.py
+   recipe_image_gen.py
+   data/
+     image_mixer/
+       config.json
+   RP/textures/
+     vanilla_recipe_background.png
+     output/
+   BP/items/
+   BP/recipes/
+   ```
+
+## Step 1: Prepare Your Images
+
+- Place all base and overlay images (e.g., backgrounds, item icons) in appropriate folders, such as `RP/textures/`.
+- Ensure all images are PNG format for compatibility.
+
+## Step 2: Configure Your Recipes
+
+- Recipe data should be in JSON format, e.g., in `BP/recipes/`.
+- The script uses `recipe_image_gen.py` to flatten and extract recipe slot and result data.
+
+## Step 3: Create the Mixer Config
+
+Edit `data/image_mixer/config.json` to define how images are combined. Example:
+
+```json
+{
+  "image_mixers": [
+    {
+      "output_folder": "RP/textures/output/",
+      "output_template": "f{index}_{layer1}_icon.png",
+      "combination_mode": "zip",
+      "layers": [
+        {
+          "path": "RP/textures/vanilla_recipe_background.png",
+          "blend_mode": "normal",
+          "scale": 2
+        },
+        {
+          "anchor": "top_left",
+          "path": "{shaped_slot_5}",
+          "offset": [5, 0],
+          "blend_mode": "normal",
+          "scale": {"width": 32, "height": 32}
+        },
+        {
+          "anchor": "top_left",
+          "path": "{shaped_result}",
+          "offset": [25, 0],
+          "blend_mode": "normal",
+          "scale": {"width": 32, "height": 32}
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Config Fields Explained
+
+- **output_folder**: Where generated images will be saved.
+- **output_template**: Filename pattern. Use `{index}` for image number, `{layerN}` for layer names.
+- **combination_mode**: `cartesian` (all combinations) or `zip` (match layers by index).
+- **layers**: List of layer configs. Each layer can specify:
+  - `path`: File path, directory, or variable (e.g., `{shaped_slot_5}`).
+  - `anchor`: Where to place the overlay (`center`, `top_left`, etc.).
+  - `offset`: [x, y] offset from anchor.
+  - `blend_mode`: Only `normal` is supported.
+  - `scale`: Number, [w, h], or `{width, height}` for resizing.
+  - `resample`: Resampling method (`NEAREST`, `BILINEAR`, etc.).
+
+## Step 4: Run the Script
+
+Run the following command in your workspace:
+
+```sh
+python image_mixer.py
+```
+
+The script will read your config, process each recipe, and generate composite images in the specified output folder.
+
+## Step 5: Troubleshooting
+
+- If you see errors about missing files or variables, check your config paths and variable names.
+- If a variable placeholder (e.g., `{shaped_slot_4}`) is not found, the script will print an error message.
+- Make sure all referenced images exist and are accessible.
+
+## Advanced Usage
+
+- You can use directories as layer paths to include all PNGs in that folder.
+- Blank layers can be specified with `"none"`, `None`, or `""`.
+- The script supports both single and multiple variants per layer.
+
+## Example Output
+
+After running, you should see images like:
+
+```
+RP/textures/output/f0_void_fragment_icon.png
+RP/textures/output/f1_void_crystal_icon.png
+```
+
+## Customization
+
+- Edit `config.json` to change layer order, scaling, anchoring, and output naming.
+- Add or remove layers as needed for your recipes.
+
+---
+For further help, review the code in `image_mixer.py` and `recipe_image_gen.py`, or ask for support.
 ## Changelog
 
 ### 1.2.0 (2025-07-25)
