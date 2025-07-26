@@ -1,4 +1,5 @@
 {
+  "$schema": "./config.schema.json",
   "image_mixers": [
     {
       "output_folder": "RP/textures/output/",
