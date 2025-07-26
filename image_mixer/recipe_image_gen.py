@@ -95,3 +95,4 @@ def get_flattened_recipe_data():
                     final["slots"][i].append(None)
 
     return final
+
