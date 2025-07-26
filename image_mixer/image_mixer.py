@@ -81,6 +81,9 @@ def get_layer_variants(layer):
         "resample": layer.get("resample", None),
     }
     variants = []
+    def error_invalid_path(path):
+        raise FileNotFoundError(f"Layer path '{path}' does not exist or is not a valid file/directory.")
+
     if isinstance(layer_path, list):
         for entry in layer_path:
             if is_blank(entry):
@@ -90,7 +93,7 @@ def get_layer_variants(layer):
                 if p.is_file():
                     variants.append({**layer_props, "path": p})
                 else:
-                    variants.append({**layer_props, "path": None})
+                    error_invalid_path(entry)
     else:
         if is_blank(layer_path):
             variants.append({**layer_props, "path": None})
@@ -101,23 +104,11 @@ def get_layer_variants(layer):
             elif p.is_file():
                 variants.append({**layer_props, "path": p})
             else:
-                variants.append({**layer_props, "path": None})
+                error_invalid_path(layer_path)
     return variants
 
 
 def expand_layers(layers):
-    """
-    For each layer in the config, build a list of possible layer variants (dicts with settings).
-    If a layer path is a directory, include all PNG files in that directory as variants.
-    If a layer path is a list, treat each entry as a file path variant.
-    If a path is None or not a valid file, it is treated as a "blank" variant (no overlay).
-
-    Args:
-        layers (list[dict]): List of layer config dicts.
-
-    Returns:
-        list[list[dict]]: List of lists, each containing dicts for each variant of a layer.
-    """
     return [get_layer_variants(layer) for layer in layers]
 
 
