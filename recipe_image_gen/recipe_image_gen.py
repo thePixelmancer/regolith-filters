@@ -68,7 +68,7 @@ def flatten_pattern(pattern, key):
 
 def get_recipe_texture_slots(recipe_data):
     """Returns a dict with recipe ID and list of texture paths."""
-    rid = recipe_data.get("description", {}).get("identifier")
+    id = recipe_data.get("description", {}).get("identifier")
     result = recipe_data.get("result", {}).get("item")
     key = recipe_data.get("key")
     pattern = recipe_data.get("pattern")
@@ -77,7 +77,7 @@ def get_recipe_texture_slots(recipe_data):
     slots = [get_item_texture_path(result)] + [
         get_item_texture_path(item) for item in flat_items
     ]
-    return {"id": rid, "slots": slots}
+    return {"id": id, "slots": slots}
 
 
 def remove_namespace(identifier):
