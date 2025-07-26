@@ -3,7 +3,7 @@
     {
       "output_folder": "RP/textures/output/",
       "output_template": "f{index}_{layer1}_icon.png",
-      "combination_mode": "cartesian",
+      "combination_mode": "zip",
       "layers": [
         {
           "path": "RP/textures/vanilla_recipe_background.png",
@@ -11,13 +11,74 @@
           "scale": 2
         },
         {
-          "path": "{shaped_result}",
-          "offset": [25, 0],
+          "anchor": "top_left",
+          "path": "{shaped_slot_0}",
+          "offset": [12, 12],
           "blend_mode": "normal",
-          "scale": {
-            "width": 32,
-            "height": 32
-          }
+          "scale": { "width": 32, "height": 32 }
+        },
+        {
+          "anchor": "top_left",
+          "path": "{shaped_slot_1}",
+          "offset": [48, 12],
+          "blend_mode": "normal",
+          "scale": { "width": 32, "height": 32 }
+        },
+        {
+          "anchor": "top_left",
+          "path": "{shaped_slot_2}",
+          "offset": [84, 12],
+          "blend_mode": "normal",
+          "scale": { "width": 32, "height": 32 }
+        },
+        {
+          "anchor": "top_left",
+          "path": "{shaped_slot_3}",
+          "offset": [12, 48],
+          "blend_mode": "normal",
+          "scale": { "width": 32, "height": 32 }
+        },
+        {
+          "anchor": "top_left",
+          "path": "{shaped_slot_4}",
+          "offset": [48, 48],
+          "blend_mode": "normal",
+          "scale": { "width": 32, "height": 32 }
+        },
+        {
+          "anchor": "top_left",
+          "path": "{shaped_slot_5}",
+          "offset": [84, 48],
+          "blend_mode": "normal",
+          "scale": { "width": 32, "height": 32 }
+        },
+        {
+          "anchor": "top_left",
+          "path": "{shaped_slot_6}",
+          "offset": [12, 84],
+          "blend_mode": "normal",
+          "scale": { "width": 32, "height": 32 }
+        },
+        {
+          "anchor": "top_left",
+          "path": "{shaped_slot_7}",
+          "offset": [48, 84],
+          "blend_mode": "normal",
+          "scale": { "width": 32, "height": 32 }
+        },
+        {
+          "anchor": "top_left",
+          "path": "{shaped_slot_8}",
+          "offset": [84, 84],
+          "blend_mode": "normal",
+          "scale": { "width": 32, "height": 32 }
+        },
+        {
+          "anchor": "top_left",
+          "path": "{shaped_result}",
+          "offset": [170, 48],
+          "blend_mode": "normal",
+          "scale": { "width": 32, "height": 32 }
         }
       ]
     }
