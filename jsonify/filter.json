@@ -1,0 +1,11 @@
+{
+  "description": "Converts YAML to JSON format",
+  "exportData": false,
+  "filters": [
+      {
+          "runWith": "python",
+          "script": "./jsonify.py",
+          "name": "jsonify"
+      }
+  ]
+}
