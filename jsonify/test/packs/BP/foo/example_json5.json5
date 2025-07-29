@@ -1,0 +1,66 @@
+// This is a comment — supported just like in JavaScript
+
+/* Multi-line
+   comments work too */
+
+{
+  // ✔ Unquoted keys
+  unquotedKey: "value",
+
+  // ✔ Single-quoted strings
+  singleQuote: "hello single quotes",
+
+  // ✔ Double-quoted strings
+  doubleQuote: "hello double quotes",
+
+  // ✔ Multiline string with continuation (no newline inserted)
+  multilineFolded: "\
+This string \
+is visually multiline \
+but contains no newlines",
+
+  // ✔ Trailing commas are allowed
+  array: [
+    1,
+    2,
+    3, // trailing comma allowed
+  ],
+
+  object: {
+    a: 1,
+    b: 2,
+    c: 3, // trailing comma allowed
+  },
+
+  // ✔ Numbers
+  int: 123,
+  float: 3.14,
+  leadingDecimal: 0.5,
+  trailingDecimal: 2,
+  exponent: 1e6,
+
+  // ✔ Hex numbers
+  hex: 0xdeadbeef,
+
+  // ✔ Special values
+  infinity: true,
+  notANumber: false,
+  undefinedValue: false, // also allowed, but not valid in JSON
+
+  // ✔ Duplicate keys — last one wins
+  duplicate: "first",
+  duplicate: "second", // this one takes effect
+
+  // ✔ Comments inside arrays and objects
+  commentedObject: {
+    // still valid here
+    x: 10,
+    y: 20,
+  },
+
+  commentedArray: [
+    1,
+    // this value is skipped
+    3,
+  ],
+}
