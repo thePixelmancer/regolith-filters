@@ -77,6 +77,19 @@ Performs intelligent string replacements across your entire project.
 **Use Case:** Quickly adapt copied files to your project's naming conventions and namespaces.
 
 ## 🚀 Quick Start
+### 🗃️ [Jsonify](./jsonify/)
+Converts YAML, JSON5, JSONC, and TOML files to standard JSON format for easier processing and compatibility.
+
+**Features:**
+- Supports YAML (.yaml, .yml), JSON5 (.json5), JSONC (.jsonc), and TOML (.toml) files
+- Recursively scans directories and converts files in-place
+- Optionally deletes the original file after conversion
+- Handles date/time objects for JSON serialization
+
+By default, original files are deleted after conversion. To keep them, set `delete_original=False` in the script.
+
+**Use Case:**
+Quickly standardize configuration and data files to JSON for use in Regolith or other tools.
 
 ### Installation
 Each filter can be installed individually using Regolith:
