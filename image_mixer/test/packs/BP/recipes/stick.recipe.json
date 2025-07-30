@@ -5,12 +5,15 @@
       "identifier": "minecraft:stick"
     },
     "pattern": [
-      "F",
-      "F"
+      "FC",
+      "FC"
     ],
     "key": {
       "F": {
         "item": "minecraft:oak_planks"
+      },
+      "C": {
+        "item": "minecraft:paper"
       }
     },
     "result": {
