@@ -25,14 +25,16 @@ Jsonify can normalize multiline strings in your data using two methods, controll
 
 - **first_index**:  
   If a list starts with the string `">-"`, it will be replaced by a space-joined string of the remaining list items.  
-  Example:
+
+  Example (great for Molang):
   ```json
-  [">-", "line 1", "line 2"]
+  [">-", "query.is_sprinting", "&&", "query.is_on_ground"]
   ```
   becomes
   ```json
-  "line 1 line 2"
+  "query.is_sprinting && query.is_on_ground"
   ```
+  This allows you to write Molang expressions across multiple lines for readability, and they will be neatly packed into a single line in the final JSON.
 
 - **key_suffix**:  
   If a dictionary key ends with `">-"` and its value is a list, the key is renamed (removing `">-"`) and the value is replaced by a space-joined string of the list items.  
