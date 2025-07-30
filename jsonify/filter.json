@@ -1,6 +1,6 @@
 {
   "description": "Converts YAML to JSON format",
-  "exportData": false,
+  "exportData": true,
   "filters": [
       {
           "runWith": "python",
