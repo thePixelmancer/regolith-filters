@@ -19,7 +19,10 @@
       "default": {
         "filters": [
           {
-            "filter": "jsonify"
+            "filter": "jsonify",
+            "settings": {
+              "folders": ["data", "RP", "BP"]
+            }
           }
         ],
         "export": {
