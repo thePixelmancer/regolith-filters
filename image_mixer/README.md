@@ -219,6 +219,43 @@ To generate recipe images that show the correct items in each slot, follow these
 
 ---
 
+
+## JSON Schema: Autocomplete & Validation
+
+This tool supports JSON Schema for config files, enabling:
+
+- **Autocomplete** for config fields, slot variables, and layer properties in editors like VS Code.
+- **Validation** to catch typos, missing fields, and structural errors before running the script.
+
+### How to Use
+
+1. Make sure your config file includes a `$schema` property at the top:
+
+   ```jsonc
+   {
+     "$schema": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/image_mixer/data/config.schema.json",
+     "image_mixers": [ ... ]
+   }
+   ```
+
+2. Open your config file in VS Code (or any schema-aware editor). You should see autocomplete suggestions and validation errors inline.
+
+3. The schema is available at:
+   - `https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/image_mixer/data/config.schema.json`
+   - Or use a local path if working offline.
+
+### Benefits
+
+- Instantly see available fields, slot variable names, and valid values.
+- Get warnings for missing or invalid properties before running the script.
+- Easier onboarding for new users and contributors.
+
+### Advanced
+
+- You can customize the schema for your own extensions or stricter validation.
+- The schema is updated as new features are added—always use the latest version for best results.
+
+---
 ## Additional Tips & Notes
 
 ### Error Handling
