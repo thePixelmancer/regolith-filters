@@ -3,14 +3,14 @@ import json
 from reticulator import *
 
 
-VANILLA_MAPPINGS_PATH = "data/image_mixer/vanilla_texture_map.json"
-with open(VANILLA_MAPPINGS_PATH, "r", encoding="utf-8") as f:
-    VANILLA_MAP = json.load(f)
+TEXTURE_MAP_PATH = "data/image_mixer/texture_map.json"
+with open(TEXTURE_MAP_PATH, "r", encoding="utf-8") as f:
+    TEXTURE_MAP = json.load(f)
 
 project = Project("BP", "RP")
+vanilla = Project("data/vanilla_packs/behavior_pack", "data/vanilla_packs/resource_pack")
 BP = project.behavior_pack
 RP = project.resource_pack
-
 
 # -------------------------------------------------------------------------------------- #
 def get_item_texture_path(item_name):
@@ -18,10 +18,10 @@ def get_item_texture_path(item_name):
     if not item_name:
         return None
 
-    # Check vanilla mappings first
-    path_from_vanilla = VANILLA_MAP.get(item_name, None)
-    if path_from_vanilla:
-        return path_from_vanilla
+    # Check if the item name is in the texture map for overrides
+    path_override = TEXTURE_MAP.get(item_name, None)
+    if path_override:
+        return path_override
 
     item = BP.get_item(item_name)
     if not item:

@@ -36,7 +36,23 @@
                 "path": {
                   "description": "Path to image file, directory, list of files, or slot variable (e.g., {shaped_slot_0}).",
                   "oneOf": [
-                    { "type": "string" },
+                    {
+                      "type": "string",
+                      "examples": [
+                        "RP/textures/",
+                        "{shaped_slot_0}",
+                        "{shaped_slot_1}",
+                        "{shaped_slot_2}",
+                        "{shaped_slot_3}",
+                        "{shaped_slot_4}",
+                        "{shaped_slot_5}",
+                        "{shaped_slot_6}",
+                        "{shaped_slot_7}",
+                        "{shaped_slot_8}",
+                        "{shaped_result}"
+                      ],
+                      "description": "Any string path, including slot variables like {shaped_slot_0}."
+                    },
                     { "type": "array", "items": { "type": "string" } }
                   ]
                 },
