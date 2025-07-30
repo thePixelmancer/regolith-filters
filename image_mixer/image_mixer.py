@@ -4,6 +4,7 @@ from pathlib import Path
 from PIL import Image
 import concurrent.futures
 import recipe_image_gen as rig
+import warnings
 
 # -------------------------------------------------------------------------------------- #
 RESAMPLE_MAP = {
@@ -15,6 +16,7 @@ RESAMPLE_MAP = {
     "HAMMING": Image.HAMMING,
 }
 RECIPE_DATA = rig.get_flattened_recipe_data()
+SCHEMA_URL = "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/image_mixer/data/config.schema.json"
 # -------------------------------------------------------------------------------------- #
 
 
@@ -328,3 +330,7 @@ if __name__ == "__main__":
         config = json.load(f)
     for image_mixer in config["image_mixers"]:
         generate_images(image_mixer)
+    if config.get("$schema") != SCHEMA_URL:
+        warnings.warn(
+            f"\n{'-'*80}\nSchema not found, get it at:\n\n{SCHEMA_URL}\n{'-'*80}"
+        )
