@@ -2,132 +2,26 @@
 
 A curated collection of custom Regolith filters for Minecraft Bedrock Edition development. These filters help automate common tasks, streamline workflows, and enhance your Bedrock Edition project development experience.
 
-## 🛠️ Available Filters
+# Pixelmancer's Regolith Filters
 
-### 🎨 [Aseprite Convert](./aseprite_convert/)
+A curated collection of **custom Regolith filters** for Minecraft Bedrock Edition development. These filters help automate common tasks, streamline workflows, and enhance your Bedrock Edition project development experience.
 
-Converts Aseprite files (`.ase` or `.aseprite`) from your Resource Pack into PNG files with multiple export modes.
+## 📦 Available Filters
 
-**Features:**
+| Name                | Link                                    | Short Description                                                                     |
+| ------------------- | --------------------------------------- | ------------------------------------------------------------------------------------- |
+| 🎨 Aseprite Convert | [Aseprite Convert](./aseprite_convert/) | Convert Aseprite files into PNGs in multiple modes, including spritesheets and atlas. |
+| 🥚 Auto Spawn Egg   | [Auto Spawn Egg](./auto_spawn_egg/)     | Auto-generate spawn egg colors for custom entities based on dominant texture colors.  |
+| 📦 Fetcher          | [Fetcher](./fetcher/)                   | Download files or folders from GitHub into your Minecraft project.                    |
+| 🖼️ Image Mixer      | [Image Mixer](./image_mixer/)           | Batch-generate composite images from layered PNGs with advanced positioning/scaling.  |
+| 🌐 MCLocalize       | [MCLocalize](./mclocalize/)             | Manage localization files for multiple languages in Bedrock Edition.                  |
+| 🔄 Replacements     | [Replacements](./replacements/)         | Perform project-wide intelligent string replacements for identifiers and namespaces.  |
+| 🗃️ Jsonify          | [Jsonify](./jsonify/)                   | Convert YAML, JSON5, JSONC, and TOML files to JSON recursively.                       |
+| 🧩 MultiFeature     | [MultiFeature](./multifeature/)         | Combine multiple feature definitions in one file and split into .json during build.   |
 
-- **Atlas Mode**: Export layers as separate cropped PNGs
-- **Frame Sequences**: Export animation frames as numbered sequences
-- **Spritesheets**: Generate sprite sheets in various orientations
-- Automatic trimming and optimization
-- Configurable export settings
+---
 
-**Use Case:** Perfect for game developers using Aseprite for texture creation who need automated conversion to Minecraft-compatible formats.
-
-### 🥚 [Auto Spawn Egg](./auto_spawn_egg/)
-
-Automatically generates spawn egg colors for custom entities based on their textures.
-
-**Features:**
-
-- Analyzes entity textures to determine dominant colors
-- Automatically creates spawn egg definitions when missing
-- Uses ColorThief library for intelligent color extraction
-- Seamless integration with existing entity files
-
-**Use Case:** Eliminates manual color picking for spawn eggs when creating custom mobs.
-
-### 📦 [Fetcher](./fetcher/)
-
-Downloads files and folders from GitHub repositories directly into your Minecraft project.
-
-**Features:**
-
-- Fetch from public and private repositories
-- Flexible target directory configuration
-- Caching system for efficient downloads
-- Support for specific commits and branches
-- Clean workspace management (removes `_fetch.json` after processing)
-
-**Use Case:** Import external libraries, scripts, or assets from GitHub repositories into your project automatically.
-
-### 🖼️ [Image Mixer](./image_mixer/)
-
-Batch-generates composite images from layered PNGs with advanced positioning and scaling options.
-
-**Features:**
-
-- Multi-threaded batch processing for speed
-- Flexible anchor positioning system
-- Advanced scaling with multiple resampling methods
-- Customizable output filename templates
-- Support for backgrounds, frames, overlays, and icons
-
-**Use Case:** Generate recipe images, UI elements, texture variants, or any composite imagery for your resource packs.
-
-### 🌐 [MCLocalize](./mclocalize/)
-
-Manages localization files for Minecraft Bedrock Edition.
-
-**Supported Languages:**
-
-- English (en_US)
-- German (de)
-- Spanish (es)
-- French (fr)
-- Italian (it)
-- Portuguese (pt)
-- Serbian (sr)
-
-**Use Case:** Streamline the localization process for international Minecraft projects.
-
-### 🔄 [Replacements](./replacements/)
-
-Performs intelligent string replacements across your entire project.
-
-**Features:**
-
-- Namespace and identifier management
-- Placeholder replacement system (e.g., `@namespace`, `@team`, `@proj`)
-- Bulk file processing
-- Perfect for project template conversion
-
-**Use Case:** Quickly adapt copied files to your project's naming conventions and namespaces.
-
-## 🚀 Quick Start
-
-### 🗃️ [Jsonify](./jsonify/)
-
-Converts YAML, JSON5, JSONC, and TOML files to standard JSON format for easier processing and compatibility.
-
-**Features:**
-
-- Supports YAML (.yaml, .yml), JSON5 (.json5), JSONC (.jsonc), and TOML (.toml) files
-- Recursively scans directories and converts files in-place
-- Optionally deletes the original file after conversion
-- Handles date/time objects for JSON serialization
-
-By default, original files are deleted after conversion. To keep them, set `delete_original=False` in the script.
-
-**Use Case:**
-Quickly standardize configuration and data files to JSON for use in Regolith or other tools.
-
-### 🧩 [MultiFeature](./multifeature/)
-
-A lightweight filter for combining multiple Minecraft feature definitions in a single file and splitting them into individual `.json` files during the Regolith build process.
-
-**Features:**
-
-- Combine multiple features in one file (`.multifeature.json`)
-- Automatically splits and exports to the correct folders (`BP/features/`, `BP/feature_rules/`)
-- Subfolder path injection and identifier rewriting
-- Minimal, modular, and designed to avoid conflicts with more complex filters
-
-**Usage:**
-Place a list of feature objects in a `.multifeature.json` file inside `BP/multifeatures/`. The filter will process and export each as a separate file during build.
-
-**Recommended Integration:**
-Use alongside other filters for string replacements, templating, or YAML-to-JSON conversion. For advanced needs, see `MiniFeature`.
-
-**VS Code Tip:**
-Add schema support for `.multifeature.json` files for validation and autocompletion (see the filter's README for details).
-
-**Use Case:**
-Keep related features grouped together for easier editing, then automatically split them for Minecraft's requirements.
+_Detailed filter usage, installation, and requirements are provided below._
 
 ### Installation
 
