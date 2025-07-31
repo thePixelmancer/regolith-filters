@@ -1,0 +1,79 @@
+# This is a comment
+
+# Simple key/value pairs
+title = "TOML Example"
+owner = "Andjelo"
+age = 30
+pi = 3.14159
+is_active = true
+none_value =  false# TOML does not support null values explicitly
+
+# Strings can be basic (double-quoted), literal (single-quoted), or multiline
+
+basic_string = "Hello, TOML!"
+literal_string = 'Single quoted string: no escapes'
+multiline_basic = """
+This is a
+multiline string
+with "quotes" and \n escapes.
+"""
+multiline_literal = '''
+This is a
+multiline literal string
+with no escapes.
+'''
+
+# Dates and times
+dob = 1979-05-27T07:32:00Z
+date_only = 1979-05-27
+time_only = 07:32:00
+
+# Arrays (homogeneous types)
+numbers = [1, 2, 3, 4]
+strings = ["one", "two", "three"]
+
+# Inline tables (like JSON objects)
+point = { x = 1, y = 2 }
+
+# Tables (sections)
+[database]
+server = "192.168.1.1"
+ports = [ 8001, 8001, 8002 ]
+connection_max = 5000
+enabled = true
+
+# Nested tables
+[servers]
+
+  [servers.alpha]
+  ip = "10.0.0.1"
+  dc = "eqdc10"
+
+  [servers.beta]
+  ip = "10.0.0.2"
+  dc = "eqdc10"
+
+# Array of tables
+[[products]]
+name = "Hammer"
+sku = 738594937
+
+[[products]]
+name = "Nail"
+sku = 284758393
+color = "gray"
+
+# Comments in-line
+color2 = "red"  # This is a color
+
+# Multiline arrays are supported:
+numbers_multiline = [
+  1,
+  2,
+  3,
+]
+
+# Key groups with dotted keys
+fruit.apple.color = "red"
+fruit.apple.taste = "sweet"
+

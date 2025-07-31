@@ -1,0 +1,36 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Bedrock-OSS/regolith-schemas/main/config/v1.4.json",
+  "author": "test",
+  "name": "test",
+  "packs": {
+    "behaviorPack": "./packs/BP",
+    "resourcePack": "./packs/RP"
+  },
+  "regolith": {
+    "dataPath": "./packs/data",
+    "filterDefinitions": {
+      "multifeature": {
+        "runWith": "python",
+        "script": "../multifeature.py"
+      }
+    },
+    "formatVersion": "1.4.0",
+    "profiles": {
+      "default": {
+        "filters": [
+          {
+            "filter": "multifeature",
+            "settings": {
+              "subfolders": "@team/@proj/"
+            }
+          }
+        ],
+        "export": {
+          "build": "standard",
+          "readOnly": false,
+          "target": "local"
+        }
+      }
+    }
+  }
+}

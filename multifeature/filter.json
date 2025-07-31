@@ -1,0 +1,11 @@
+{
+  "description": "Allows creating multiple features in a single JSON file",
+  "exportData": true,
+  "filters": [
+      {
+          "runWith": "python",
+          "script": "./multifeature.py",
+          "name": "multifeature"
+      }
+  ]
+}

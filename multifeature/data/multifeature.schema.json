@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/multifeature.schema.json",
+  "title": "Minecraft MultiFeature File",
+  "type": "array",
+  "items": {
+    "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/0967f0790f9846407585b1a518e33cdf3c30219c/behavior/features/features.json"
+  }
+}
