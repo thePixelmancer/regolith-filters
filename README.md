@@ -5,11 +5,13 @@ A curated collection of custom Regolith filters for Minecraft Bedrock Edition de
 ## 🛠️ Available Filters
 
 ### 🎨 [Aseprite Convert](./aseprite_convert/)
+
 Converts Aseprite files (`.ase` or `.aseprite`) from your Resource Pack into PNG files with multiple export modes.
 
 **Features:**
+
 - **Atlas Mode**: Export layers as separate cropped PNGs
-- **Frame Sequences**: Export animation frames as numbered sequences  
+- **Frame Sequences**: Export animation frames as numbered sequences
 - **Spritesheets**: Generate sprite sheets in various orientations
 - Automatic trimming and optimization
 - Configurable export settings
@@ -17,9 +19,11 @@ Converts Aseprite files (`.ase` or `.aseprite`) from your Resource Pack into PNG
 **Use Case:** Perfect for game developers using Aseprite for texture creation who need automated conversion to Minecraft-compatible formats.
 
 ### 🥚 [Auto Spawn Egg](./auto_spawn_egg/)
+
 Automatically generates spawn egg colors for custom entities based on their textures.
 
 **Features:**
+
 - Analyzes entity textures to determine dominant colors
 - Automatically creates spawn egg definitions when missing
 - Uses ColorThief library for intelligent color extraction
@@ -28,9 +32,11 @@ Automatically generates spawn egg colors for custom entities based on their text
 **Use Case:** Eliminates manual color picking for spawn eggs when creating custom mobs.
 
 ### 📦 [Fetcher](./fetcher/)
+
 Downloads files and folders from GitHub repositories directly into your Minecraft project.
 
 **Features:**
+
 - Fetch from public and private repositories
 - Flexible target directory configuration
 - Caching system for efficient downloads
@@ -40,9 +46,11 @@ Downloads files and folders from GitHub repositories directly into your Minecraf
 **Use Case:** Import external libraries, scripts, or assets from GitHub repositories into your project automatically.
 
 ### 🖼️ [Image Mixer](./image_mixer/)
+
 Batch-generates composite images from layered PNGs with advanced positioning and scaling options.
 
 **Features:**
+
 - Multi-threaded batch processing for speed
 - Flexible anchor positioning system
 - Advanced scaling with multiple resampling methods
@@ -52,12 +60,14 @@ Batch-generates composite images from layered PNGs with advanced positioning and
 **Use Case:** Generate recipe images, UI elements, texture variants, or any composite imagery for your resource packs.
 
 ### 🌐 [MCLocalize](./mclocalize/)
+
 Manages localization files for Minecraft Bedrock Edition.
 
 **Supported Languages:**
+
 - English (en_US)
 - German (de)
-- Spanish (es)  
+- Spanish (es)
 - French (fr)
 - Italian (it)
 - Portuguese (pt)
@@ -66,9 +76,11 @@ Manages localization files for Minecraft Bedrock Edition.
 **Use Case:** Streamline the localization process for international Minecraft projects.
 
 ### 🔄 [Replacements](./replacements/)
+
 Performs intelligent string replacements across your entire project.
 
 **Features:**
+
 - Namespace and identifier management
 - Placeholder replacement system (e.g., `@namespace`, `@team`, `@proj`)
 - Bulk file processing
@@ -77,10 +89,13 @@ Performs intelligent string replacements across your entire project.
 **Use Case:** Quickly adapt copied files to your project's naming conventions and namespaces.
 
 ## 🚀 Quick Start
+
 ### 🗃️ [Jsonify](./jsonify/)
+
 Converts YAML, JSON5, JSONC, and TOML files to standard JSON format for easier processing and compatibility.
 
 **Features:**
+
 - Supports YAML (.yaml, .yml), JSON5 (.json5), JSONC (.jsonc), and TOML (.toml) files
 - Recursively scans directories and converts files in-place
 - Optionally deletes the original file after conversion
@@ -91,7 +106,31 @@ By default, original files are deleted after conversion. To keep them, set `dele
 **Use Case:**
 Quickly standardize configuration and data files to JSON for use in Regolith or other tools.
 
+### 🧩 [MultiFeature](./multifeature/)
+
+A lightweight filter for combining multiple Minecraft feature definitions in a single file and splitting them into individual `.json` files during the Regolith build process.
+
+**Features:**
+
+- Combine multiple features in one file (`.multifeature.json`)
+- Automatically splits and exports to the correct folders (`BP/features/`, `BP/feature_rules/`)
+- Subfolder path injection and identifier rewriting
+- Minimal, modular, and designed to avoid conflicts with more complex filters
+
+**Usage:**
+Place a list of feature objects in a `.multifeature.json` file inside `BP/multifeatures/`. The filter will process and export each as a separate file during build.
+
+**Recommended Integration:**
+Use alongside other filters for string replacements, templating, or YAML-to-JSON conversion. For advanced needs, see `MiniFeature`.
+
+**VS Code Tip:**
+Add schema support for `.multifeature.json` files for validation and autocompletion (see the filter's README for details).
+
+**Use Case:**
+Keep related features grouped together for easier editing, then automatically split them for Minecraft's requirements.
+
 ### Installation
+
 Each filter can be installed individually using Regolith:
 
 ```bash
@@ -105,6 +144,7 @@ regolith install replacements
 ```
 
 ### Usage
+
 Add filters to your Regolith profile in `config.json`:
 
 ```json
@@ -129,16 +169,19 @@ Add filters to your Regolith profile in `config.json`:
 ## 📋 Requirements
 
 ### General Requirements
+
 - [Regolith](https://regolith-mc.github.io/) - Bedrock Edition development framework
 - Python 3.7+ (for Python-based filters)
 
 ### Filter-Specific Requirements
+
 - **Aseprite Convert**: [Aseprite](https://aseprite.org/) software
 - **Auto Spawn Egg**: `colorthief` Python library
 - **Image Mixer**: `Pillow` (PIL) Python library
 - **Fetcher**: `requests` Python library
 
 Install Python dependencies:
+
 ```bash
 pip install colorthief pillow requests
 ```
@@ -146,14 +189,16 @@ pip install colorthief pillow requests
 ## 🤝 Contributing
 
 Contributions are welcome! Whether you want to:
+
 - 🐛 Report bugs
-- 💡 Suggest new features  
+- 💡 Suggest new features
 - 🔧 Submit pull requests
 - 📚 Improve documentation
 
 Please feel free to open an issue or submit a pull request.
 
 ### Development Guidelines
+
 1. Each filter should be self-contained in its own directory
 2. Include comprehensive README documentation
 3. Provide example configurations and test cases
@@ -173,6 +218,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 If you encounter issues or need help:
+
 1. Check the individual filter README files for specific documentation
 2. Search existing [GitHub issues](https://github.com/thePixelmancer/regolith-filters/issues)
 3. Create a new issue with detailed information about your problem
