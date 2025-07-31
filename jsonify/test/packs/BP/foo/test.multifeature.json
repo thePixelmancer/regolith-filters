@@ -1,0 +1,21 @@
+{
+  "@namespace:feature1": {
+    "type": "scatter",
+    "format_version": "1.21.90",
+    "places": "@namespace:@team/@proj/test_feature1",
+    "feature": {
+      "project_input_to_floor": true,
+      "distribution": {
+        "coordinate_eval_order": "xzy",
+        "scatter_chance": 100,
+        "iterations": 300,
+        "x": "v.rand_angle = math.random(0,360); v.radius = math.pow(math.random(0,1),2) * 40; return math.round(math.sin(v.rand_angle) * v.radius);",
+        "y": 0,
+        "z": "return math.round(math.cos(v.rand_angle) * v.radius);"
+      }
+    }
+  },
+  "@namespace:feature2": {},
+
+  "@namespace:feature3": {}
+}

@@ -1,0 +1,65 @@
+[
+  {
+    "format_version": "1.21.0",
+    "minecraft:feature_rules": {
+      "description": {
+        "identifier": "@namespace:random.feature_rule",
+        "places_feature": "@namespace:tall_chorus_grass.feature"
+      },
+      "conditions": {
+        "placement_pass": "surface_pass",
+        "minecraft:biome_filter": [
+          {
+            "any_of": [
+              {
+                "test": "has_biome_tag",
+                "operator": "==",
+                "value": "savanna"
+              }
+            ]
+          }
+        ]
+      },
+      "distribution": {
+        "iterations": 0.5,
+        "x": {
+          "distribution": "uniform",
+          "extent": [0, 15]
+        },
+        "y": "query.heightmap(v.worldx, v.worldz)",
+        "z": {
+          "distribution": "uniform",
+          "extent": [0, 15]
+        }
+      }
+    }
+  },
+  {
+    "format_version": "1.21.0",
+    "minecraft:scatter_feature": {
+      "description": {
+        "identifier": "@namespace:tall_chorus_grass.feature"
+      },
+      "places_feature": "@namespace:diamond_block.feature",
+      "iterations": 1,
+      "scatter_chance": 1,
+      "x": 0,
+      "z": 0,
+      "y": 0
+    }
+  },
+  {
+    "format_version": "1.21.0",
+    "minecraft:scatter_feature": {
+      "description": {
+        "identifier": "@namespace:tall_chorus_grass.feature"
+      },
+      "places_feature": "@namespace:diamond_block.feature",
+      "iterations": 1,
+      "scatter_chance": 1,
+      "x": 0,
+      "z": 0,
+      "y": 0
+    }
+  }
+]
