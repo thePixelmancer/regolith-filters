@@ -108,6 +108,7 @@ This filter **does not support inline/nested features**. This is intentional:
 I highly recommend using YAML for your feature definitions and project files. YAML is more readable, supports multiline strings, and allows you to use visual breaks (like `---`) to separate entries or sections. For example, you can use `---` to divide files or for multiline strings, making your files much easier to read and edit.
 
 To work with YAML or multiline strings in JSON, use my [Jsonify filter](https://github.com/BigChungus21220/jsonify-regolith-filter) (the bread and butter of my workflow). Jsonify lets you:
+
 - Write your entire project in YAML, not just features.
 - Use multiline strings in JSON directly.
 - Choose your own listing syntax and file organization.
@@ -118,6 +119,25 @@ If you’re looking for a full-featured system: use `MiniFeature`.
 
 If you just want a clean, focused solution for breaking up feature files — this is the tool for you.
 
+Made with ❤️ for Minecraft Bedrock creators.
+
 ---
 
-Made with ❤️ for Minecraft Bedrock creators.
+## 🛠️ VS Code: Add Schema Support for `.multifeature.json`
+
+To get validation and autocompletion for your `.multifeature.json` files in VS Code, you can associate a JSON schema with these files:
+
+1. Open your VS Code settings (`Ctrl+,` or `Cmd+,`).
+2. Search for `json.schemas` and click `Edit in settings.json`.
+3. Add an entry like this:
+
+   ```json
+   "json.schemas": [
+     {
+       "fileMatch": ["*.multifeature.json"],
+       "url": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/multifeature/data/multifeature.schema.json"
+     }
+   ]
+   ```
+
+This will enable validation and helpful autocompletion for all `.multifeature.json` files in your workspace.
