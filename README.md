@@ -17,7 +17,7 @@ A curated collection of **custom Regolith filters** for Minecraft Bedrock Editio
 | 🌐 | [MCLocalize](./mclocalize/)             | Manage localization files for multiple languages in Bedrock Edition.                  |
 | 🔄 | [Replacements](./replacements/)         | Perform project-wide intelligent string replacements for identifiers and namespaces.  |
 | 🗃️ | [Jsonify](./jsonify/)                   | Convert YAML, JSON5, JSONC, and TOML files to JSON recursively.                       |
-| <img src="./multifeature/images/icon.png" width="20" height="20"> | [MultiFeature](./multifeature/)         | Combine multiple feature definitions in one file and split into .json during build.   |
+| <img src="./multifeature/images/icon.png" width="100" height="100"> | [MultiFeature](./multifeature/)         | Combine multiple feature definitions in one file and split into .json during build.   |
 
 ---
 
