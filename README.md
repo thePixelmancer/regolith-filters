@@ -8,16 +8,16 @@ A curated collection of **custom Regolith filters** for Minecraft Bedrock Editio
 
 ## 📦 Available Filters
 
-| Name                | Link                                    | Short Description                                                                     |
+|                 | Link                                    | Short Description                                                                     |
 | ------------------- | --------------------------------------- | ------------------------------------------------------------------------------------- |
-| 🎨 Aseprite Convert | [Aseprite Convert](./aseprite_convert/) | Convert Aseprite files into PNGs in multiple modes, including spritesheets and atlas. |
-| 🥚 Auto Spawn Egg   | [Auto Spawn Egg](./auto_spawn_egg/)     | Auto-generate spawn egg colors for custom entities based on dominant texture colors.  |
-| 📦 Fetcher          | [Fetcher](./fetcher/)                   | Download files or folders from GitHub into your Minecraft project.                    |
-| 🖼️ Image Mixer      | [Image Mixer](./image_mixer/)           | Batch-generate composite images from layered PNGs with advanced positioning/scaling.  |
-| 🌐 MCLocalize       | [MCLocalize](./mclocalize/)             | Manage localization files for multiple languages in Bedrock Edition.                  |
-| 🔄 Replacements     | [Replacements](./replacements/)         | Perform project-wide intelligent string replacements for identifiers and namespaces.  |
-| 🗃️ Jsonify          | [Jsonify](./jsonify/)                   | Convert YAML, JSON5, JSONC, and TOML files to JSON recursively.                       |
-| 🧩 MultiFeature     | [MultiFeature](./multifeature/)         | Combine multiple feature definitions in one file and split into .json during build.   |
+| 🎨 | [Aseprite Convert](./aseprite_convert/) | Convert Aseprite files into PNGs in multiple modes, including spritesheets and atlas. |
+| 🥚 | [Auto Spawn Egg](./auto_spawn_egg/)     | Auto-generate spawn egg colors for custom entities based on dominant texture colors.  |
+| 📦 | [Fetcher](./fetcher/)                   | Download files or folders from GitHub into your Minecraft project.                    |
+| 🖼️ | [Image Mixer](./image_mixer/)           | Batch-generate composite images from layered PNGs with advanced positioning/scaling.  |
+| 🌐 | [MCLocalize](./mclocalize/)             | Manage localization files for multiple languages in Bedrock Edition.                  |
+| 🔄 | [Replacements](./replacements/)         | Perform project-wide intelligent string replacements for identifiers and namespaces.  |
+| 🗃️ | [Jsonify](./jsonify/)                   | Convert YAML, JSON5, JSONC, and TOML files to JSON recursively.                       |
+| <img src="./multifeature/icon.png" width="20" height="20"> | [MultiFeature](./multifeature/)         | Combine multiple feature definitions in one file and split into .json during build.   |
 
 ---
 
@@ -35,6 +35,8 @@ regolith install fetcher
 regolith install image_mixer
 regolith install mclocalize
 regolith install replacements
+regolith install jsonify
+regolith install multifeature
 ```
 
 ### Usage

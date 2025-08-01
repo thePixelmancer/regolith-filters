@@ -5,6 +5,12 @@
         "*.multifeature.json"
       ],
       "url": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/multifeature/data/multifeature.schema.json"
+    },
+    {
+      "fileMatch": [
+        "*.multifeature.json"
+      ],
+      "url": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/multifeature/multifeature.schema.json"
     }
   ]
 }
