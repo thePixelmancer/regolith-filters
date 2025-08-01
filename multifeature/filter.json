@@ -5,23 +5,7 @@
     {
       "runWith": "python",
       "script": "./multifeature.py",
-      "name": "multifeature",
-      "vsc_settings": {
-        "python.defaultInterpreterPath": "./venv/Scripts/python.exe",
-        "files.associations": {
-          "*.mcfunction": "mcfunction",
-          "*.mcmeta": "json"
-        },
-        "editor.tabSize": 2,
-        "editor.insertSpaces": true,
-        "extensions.recommendations": ["ms-python.python", "arcensoth.language-mcfunction"],
-        "json.schemas": [
-          {
-            "fileMatch": ["*.mcmeta"],
-            "url": "https://raw.githubusercontent.com/misode/mcmeta/summary/pack_mcmeta.json"
-          }
-        ]
-      }
+      "name": "multifeature"
     }
   ]
 }

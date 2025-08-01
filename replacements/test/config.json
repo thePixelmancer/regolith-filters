@@ -1,41 +1,41 @@
 {
-  "$schema": "https://raw.githubusercontent.com/Bedrock-OSS/regolith-schemas/main/config/v1.4.json",
-  "author": "test",
-  "name": "test",
-  "packs": {
-    "behaviorPack": "./packs/BP",
-    "resourcePack": "./packs/RP"
-  },
-  "regolith": {
-    "dataPath": "./packs/data",
-    "filterDefinitions": {
-      "replacements": {
-        "runWith": "python",
-        "script": "../replacements.py"
-      }
-    },
-    "formatVersion": "1.4.0",
-    "profiles": {
-      "default": {
-        "filters": [
-          {
-            "filter": "replacements",
-            "settings": {
-              "replace": {
-                "fizz": "buzz",
-                "foo": "bar"
-              },
-              "rename_folders": true,
-              "rename_files": true
-            }
-          }
-        ],
-        "export": {
-          "build": "standard",
-          "readOnly": false,
-          "target": "local"
-        }
-      }
-    }
-  }
+	"$schema": "https://raw.githubusercontent.com/Bedrock-OSS/regolith-schemas/main/config/v1.4.json",
+	"author": "test",
+	"name": "test",
+	"packs": {
+		"behaviorPack": "./packs/BP",
+		"resourcePack": "./packs/RP"
+	},
+	"regolith": {
+		"dataPath": "./packs/data",
+		"filterDefinitions": {
+			"replacements": {
+				"runWith": "python",
+				"script": "../replacements.py"
+			}
+		},
+		"formatVersion": "1.4.0",
+		"profiles": {
+			"default": {
+				"export": {
+					"build": "standard",
+					"readOnly": false,
+					"target": "local"
+				},
+				"filters": [
+					{
+						"filter": "replacements",
+						"settings": {
+							"rename_files": true,
+							"rename_folders": true,
+							"replace": {
+								"fizz": "buzz",
+								"foo": "bar"
+							}
+						}
+					}
+				]
+			}
+		}
+	}
 }
