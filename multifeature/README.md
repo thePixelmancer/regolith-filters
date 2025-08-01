@@ -1,5 +1,8 @@
-# MultiFeature - a Regolith Filter
+<div align="center">
+  <img src="banner.png" alt="MultiFeature Filter Banner" width="100%">
+</div>
 
+# a Regolith Filter
 A lightweight Regolith filter for simplifying Minecraft feature generation.
 
 ## 🧩 What is this?
