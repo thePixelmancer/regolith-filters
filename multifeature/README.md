@@ -1,4 +1,4 @@
-# MultiFeature Filter for Regolith
+# MultiFeature - a Regolith Filter
 
 A lightweight Regolith filter for simplifying Minecraft feature generation.
 
