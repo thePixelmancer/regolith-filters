@@ -4,21 +4,15 @@ import json5
 import shutil
 import sys
 import os
+from pathlib import Path
+import json
+from typing import Union
 
 # -------------------------------------------------------------------------------------- #
 # Configuration
 # -------------------------------------------------------------------------------------- #
 SETTINGS = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
 SUBFOLDERS = SETTINGS.get("subfolders", "")
-ROOT_DIR = Path(os.environ.get("ROOT_DIR", "."))
-VSCODE_SETTINGS = {
-    "json.schemas": [
-        {
-            "fileMatch": ["*.multifeature.json"],
-            "url": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/multifeature/data/multifeature.schema.json",
-        }
-    ]
-}
 
 
 # -------------------------------------------------------------------------------------- #
@@ -78,11 +72,6 @@ def normalize_path(path: str) -> str:
     """
     path = path.lstrip("/")
     return f"{path}/" if path and not path.endswith("/") else path
-
-
-from pathlib import Path
-import json
-from typing import Union
 
 
 def merge_json_files(base_data: Union[Path, dict], new_data: Union[Path, dict]):
@@ -193,11 +182,25 @@ def process_multifeature(file_path: Path):
 # -------------------------------------------------------------------------------------- #
 if __name__ == "__main__":
     input_dir = Path("BP/multifeatures")
+    if not input_dir.exists():
+        print(f"Input directory {input_dir} does not exist. Exiting.")
+        sys.exit(1)
     for file_path in input_dir.glob("*.multifeature.json"):
         process_multifeature(file_path)
+        print(f"Processed {file_path}")
 
     shutil.rmtree(input_dir)
     # -------------------------------------------------------------------------------------- #
     # Merge settings.json from data/.vscode/settings.json into project .vscode/settings.json
+    ROOT_DIR = Path(os.environ.get("ROOT_DIR", "."))
+    VSCODE_SETTINGS = {
+        "json.schemas": [
+            {
+                "fileMatch": ["*.multifeature.json"],
+                "url": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/multifeature/data/multifeature.schema.json",
+            }
+        ]
+    }
+
     vscode_project_path = ROOT_DIR / ".vscode" / "settings.json"
     merge_json_files(vscode_project_path, VSCODE_SETTINGS)
