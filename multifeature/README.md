@@ -123,9 +123,13 @@ Made with ❤️ for Minecraft Bedrock creators.
 
 ---
 
-## 🛠️ VS Code: Add Schema Support for `.multifeature.json`
+## 🛠️ VS Code: Schema Support for `.multifeature.json`
 
-To get validation and autocompletion for your `.multifeature.json` files in VS Code, you can associate a JSON schema with these files:
+**Good news!** Schema support is now automatically installed when you run this filter.
+
+The filter will automatically configure VS Code to provide validation and autocompletion for your `.multifeature.json` files by adding the appropriate schema association to your VS Code settings.
+
+If you need to manually configure it (or prefer to do it yourself), you can:
 
 1. Open your VS Code settings (`Ctrl+,` or `Cmd+,`).
 2. Search for `json.schemas` and click `Edit in settings.json`.
