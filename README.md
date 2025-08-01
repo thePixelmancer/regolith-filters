@@ -1,12 +1,14 @@
-# Pixelmancer's Regolith Filters
+# 🎮 Pixelmancer's Regolith Filters
 
-A curated collection of custom Regolith filters for Minecraft Bedrock Edition development. These filters help automate common tasks, streamline workflows, and enhance your Bedrock Edition project development experience.
-
-# Pixelmancer's Regolith Filters
+[![GitHub](https://img.shields.io/badge/GitHub-regolith--filters-blue?logo=github)](https://github.com/thePixelmancer/regolith-filters)
+[![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
+[![Regolith](https://img.shields.io/badge/Regolith-Compatible-purple)](https://regolith-mc.github.io/)
 
 A curated collection of **custom Regolith filters** for Minecraft Bedrock Edition development. These filters help automate common tasks, streamline workflows, and enhance your Bedrock Edition project development experience.
 
-## 📦 Available Filters
+> 🚀 **Ready to supercharge your Minecraft development?** Each filter is designed to solve real problems that Bedrock Edition developers face daily.
+
+--- 📦 Available Filters
 
 |                 | Link                                    | Short Description                                                                     |
 | ------------------- | --------------------------------------- | ------------------------------------------------------------------------------------- |
@@ -18,10 +20,13 @@ A curated collection of **custom Regolith filters** for Minecraft Bedrock Editio
 | 🔄 | [Replacements](./replacements/)         | Perform project-wide intelligent string replacements for identifiers and namespaces.  |
 | 🗃️ | [Jsonify](./jsonify/)                   | Convert YAML, JSON5, JSONC, and TOML files to JSON recursively.                       |
 | <img src="./multifeature/images/icon.png" width="100" height="100"> | [MultiFeature](./multifeature/)         | Combine multiple feature definitions in one file and split into .json during build.   |
+| 🍳 | [Recipe Image Gen](./recipe_image_gen/) | Generate recipe images automatically from crafting recipe definitions.                 |
 
 ---
 
-_Detailed filter usage, installation, and requirements are provided below._
+*Detailed filter documentation, installation guides, and configuration examples are provided below.*
+
+## 🚀 Quick Start
 
 ### Installation
 
@@ -37,6 +42,7 @@ regolith install mclocalize
 regolith install replacements
 regolith install jsonify
 regolith install multifeature
+regolith install recipe_image_gen
 ```
 
 ### Usage
@@ -75,11 +81,14 @@ Add filters to your Regolith profile in `config.json`:
 - **Auto Spawn Egg**: `colorthief` Python library
 - **Image Mixer**: `Pillow` (PIL) Python library
 - **Fetcher**: `requests` Python library
+- **Jsonify**: `ruamel.yaml`, `json5`, `tomllib` Python libraries
+- **MCLocalize**: `translators` Python library
+- **Recipe Image Gen**: `Pillow` (PIL), `reticulator` Python libraries
 
 Install Python dependencies:
 
 ```bash
-pip install colorthief pillow requests
+pip install colorthief pillow requests ruamel.yaml json5 translators reticulator
 ```
 
 ## 🤝 Contributing
@@ -100,6 +109,16 @@ Please feel free to open an issue or submit a pull request.
 3. Provide example configurations and test cases
 4. Follow Python best practices for code quality
 5. Test thoroughly with various Minecraft project setups
+
+## 🌟 Why Choose These Filters?
+
+- ✅ **Production-Ready**: Battle-tested in real Minecraft projects
+- 🔧 **Easy Integration**: Simple installation and configuration
+- 📚 **Comprehensive Docs**: Detailed documentation and examples
+- 🎯 **Focused Solutions**: Each filter solves specific development challenges
+- 🤝 **Community-Driven**: Open source with active community support
+
+---
 
 ## 📄 License
 

@@ -1,59 +1,181 @@
-# mclocalize
+# 🌐 MCLocalize
 
-> **Warning:** This filter uses Google Translate (or other machine translators) and may not always translate everything fully or accurately. Mistakes, awkward phrasing, or untranslated text can occur. Always review and edit translations as needed.
->
-> **Recommended usage:** This filter is best used as a one-time tool at the end of development to quickly generate initial translations for your project. For best results, have a fluent speaker review the output before release.
+[![Regolith Filter](https://img.shields.io/badge/Regolith-Filter-blue)](https://regolith-mc.github.io/)
+[![Python](https://img.shields.io/badge/Python-3.7%2B-brightgreen)](https://python.org)
 
-A Minecraft language file translation filter for Regolith.
+**Automated language file translation for Minecraft Bedrock Edition projects.**
 
-## Features
-- Bulk translates Minecraft `.lang` files from English to multiple target languages.
-- Uses the [translators](https://github.com/UlionTse/translators) Python library (Google Translate by default).
-- Supports translation caching and parallel processing for speed.
-- Simple config: just specify your source file and target languages.
+Bulk translate your Minecraft `.lang` files from English to multiple target languages using machine translation, making your addons accessible to players worldwide.
 
-## Installation
+> ⚠️ **Important Notice**  
+> This filter uses machine translation (Google Translate by default) and may not always be 100% accurate. Review and edit translations before release.
+> 
+> 💡 **Best Practice**  
+> Use this filter as a starting point at the end of development, then have native speakers review the output.
 
-You can install this filter with Regolith:
-```
+--- ## ✨ Features
+
+- 🌍 **Multi-Language Support**: Translate to 7+ languages including German, Spanish, French, Italian, Portuguese, and Serbian
+- 🚀 **Bulk Processing**: Translates entire `.lang` files at once
+- ⚡ **Smart Caching**: Avoids re-translating already processed text
+- 🔄 **Parallel Processing**: Faster translation with concurrent requests
+- ⚙️ **Configurable**: Simple configuration for source files and target languages
+- 🎯 **Minecraft-Focused**: Designed specifically for Minecraft Bedrock Edition language files
+
+---
+
+## 🚀 Quick Start
+
+### Installation
+```bash
 regolith install mclocalize
 ```
 
-Or clone/download this repo and use it directly.
+### Requirements
+- **Python 3.7+**
+- **Translators library**: `pip install translators`
 
-## Usage
+---
 
-### 1. Install dependencies
-```
+## ⚙️ Usage
+
+### 1. Install Dependencies
+```bash
 pip install translators
 ```
 
-### 2. Prepare your config
-Create a config JSON (or use Regolith's filter settings):
+### 2. Configure the Filter
+Add to your Regolith profile:
+```json
+{
+  "filter": "mclocalize",
+  "settings": {
+    "source_file": "en_US.lang",
+    "target_languages": ["fr", "de", "es", "it", "pt", "sr"]
+  }
+}
+```
+
+### 3. Run the Filter
+```bash
+regolith run
+```
+
+---
+
+## ⚙️ Configuration
+
+### Basic Configuration
 ```json
 {
   "source_file": "en_US.lang",
   "target_languages": ["fr", "de", "es"]
 }
 ```
-- `source_file`: The English `.lang` file to translate (relative to `RP/texts/`).
-- `target_languages`: List of language codes to generate (e.g. `fr`, `de`, `es`).
 
-### 3. Run the filter
+### Configuration Options
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `source_file` | string | ✅ | English `.lang` file to translate (relative to `RP/texts/`) |
+| `target_languages` | array | ✅ | List of language codes to generate translations for |
+
+### Supported Language Codes
+
+| Code | Language | Code | Language |
+|------|----------|------|----------|
+| `fr` | French | `de` | German |
+| `es` | Spanish | `it` | Italian |
+| `pt` | Portuguese | `sr` | Serbian |
+
+---
+
+## 📁 File Structure
+
+The filter expects and creates files in the standard Minecraft structure:
+
 ```
-python mclocalize.py '{"source_file": "en_US.lang", "target_languages": ["fr", "de", "es"]}'
+RP/
+└── texts/
+    ├── en_US.lang          # Source file
+    ├── fr_FR.lang          # Generated French
+    ├── de_DE.lang          # Generated German
+    ├── es_ES.lang          # Generated Spanish
+    └── ...                 # Other languages
 ```
 
-Or, if using Regolith, add to your `config.json` filter settings:
-```json
-{
-  "filter": "mclocalize",
-  "settings": {
-    "source_file": "en_US.lang",
-    "target_languages": ["fr", "de", "es"]
-  }
-}
+---
+
+## 🛠️ Advanced Usage
+
+### Standalone Execution
+You can also run the filter directly:
+```bash
+python mclocalize.py '{"source_file": "en_US.lang", "target_languages": ["fr", "de"]}'
 ```
+
+### Custom Translation Service
+The filter uses Google Translate by default, but you can modify the script to use other services supported by the `translators` library.
+
+---
+
+## 📝 Example
+
+**Input** (`en_US.lang`):
+```
+entity.mymod:custom_mob.name=Custom Mob
+item.mymod:custom_sword.name=Custom Sword
+tile.mymod:custom_block.name=Custom Block
+```
+
+**Output** (`fr_FR.lang`):
+```
+entity.mymod:custom_mob.name=Créature Personnalisée
+item.mymod:custom_sword.name=Épée Personnalisée
+tile.mymod:custom_block.name=Bloc Personnalisé
+```
+
+---
+
+## ⚠️ Limitations & Best Practices
+
+### Translation Quality
+- Machine translation may not capture context perfectly
+- Technical terms might be translated incorrectly
+- Always review output with native speakers
+
+### Performance
+- Large files may take time to process
+- Caching helps avoid re-translating existing content
+- Parallel processing speeds up bulk translations
+
+### Best Practices
+1. **Review Translations**: Always have native speakers review the output
+2. **Test in Game**: Verify translations display correctly in Minecraft
+3. **Iterative Approach**: Translate in batches and review incrementally
+4. **Backup Originals**: Keep your source files safe
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+
+---
+
+*Made with ❤️ for Minecraft Bedrock creators*
 
 ### 4. Output
 - Translated `.lang` files will be created in the same folder as your source file, named by language code (e.g. `fr.lang`).

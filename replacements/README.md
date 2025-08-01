@@ -1,22 +1,43 @@
-# Replacements Filter
+# 🔄 Replacements
 
-This repository provides a **Regolith filter** for performing string replacements in Bedrock Edition packs. It is designed to automate the process of replacing placeholder strings (such as `@namespace`, `@team`, `@proj`) with your desired values across multiple files in your project.
+[![Regolith Filter](https://img.shields.io/badge/Regolith-Filter-blue)](https://regolith-mc.github.io/)
+[![Python](https://img.shields.io/badge/Python-3.7%2B-brightgreen)](https://python.org)
 
-## Why use this filter?
+**Powerful string replacement filter for automating namespace and identifier management in Bedrock Edition packs.**
 
-This filter is especially useful for namespacing: you can define preset values (like your namespace, team, or project name) in one place and quickly change them across your entire project. This is extremely helpful when copying files from other projects, as you can instantly update all relevant identifiers to match your new project.
+Automate the process of replacing placeholder strings (such as `@namespace`, `@team`, `@proj`) with your desired values across multiple files in your project. Perfect for adapting templates and managing project-wide identifiers.
 
-It works particularly well in tandem with other filters, such as the `modular_mc` Regolith filter, to streamline and modularize your Bedrock Edition development workflow.
+---
 
-## Installation
+## 🎯 Why Use This Filter?
 
-To install the filter, run:
+This filter is especially useful for **namespacing and project management**:
 
-```sh
+- 🏷️ **Centralized Identifiers**: Define preset values in one place and apply them project-wide
+- 🔄 **Template Adaptation**: Quickly update all relevant identifiers when copying from other projects
+- 🧩 **Modular Workflow**: Works seamlessly with other Regolith filters for streamlined development
+- ⚡ **Batch Processing**: Replace thousands of strings across hundreds of files instantly
+
+---
+
+## ✨ Features
+
+- 🎯 **Smart String Replacement**: Replace placeholders like `@namespace`, `@team`, `@proj` across all files
+- 📁 **Project-Wide Processing**: Handles entire behavior and resource pack directories
+- ⚙️ **Flexible Configuration**: Define custom replacement patterns and values
+- 🔧 **Template-Friendly**: Perfect for project templates and boilerplates
+- 🧩 **Filter Integration**: Designed to work with other Regolith filters
+
+---
+
+## 🚀 Quick Start
+
+### Installation
+```bash
 regolith install replacements
 ```
 
-## Usage
+### Basic Usage
 
 Add the filter to your Regolith profile in your `config.json`:
 
