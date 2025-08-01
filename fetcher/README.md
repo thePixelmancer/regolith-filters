@@ -1,8 +1,48 @@
-# Regolith Fetcher Filter
+# 📦 Fetcher
 
-A Regolith filter for automatically fetching files or folders from GitHub repositories into your Minecraft Bedrock Edition project. This filter streamlines the process of importing external resources, scripts, or packs, and supports flexible configuration for advanced workflows.
+[![Regolith Filter](https://img.shields.io/badge/Regolith-Filter-blue)](https://regolith-mc.github.io/)
+[![Python](https://img.shields.io/badge/Python-3.7%2B-brightgreen)](https://python.org)
 
-## How It Works
+**Automatically fetch files and folders from GitHub repositories directly into your Minecraft Bedrock Edition project.**
+
+This filter streamlines the process of importing external resources, scripts, or packs with flexible configuration for advanced workflows, caching, and clean workspace management.
+
+---
+
+## ✨ Features
+
+- 📁 **GitHub Integration**: Fetch files/folders from any public or private GitHub repository
+- 🎯 **Flexible Targeting**: Configurable output paths and folder structures
+- 🔄 **Smart Caching**: Efficient caching by commit hash for reproducibility
+- 🧹 **Clean Workspace**: Automatically removes fetch configuration files after processing
+- 🔐 **Private Repo Support**: Token-based authentication for private repositories
+- ⚡ **Batch Processing**: Handle multiple fetch operations in a single run
+
+---
+
+## 🚀 Quick Start
+
+### Installation
+```bash
+regolith install fetcher
+```
+
+### Requirements
+- **Python 3.7+**
+- **Requests**: `pip install requests`
+
+### Basic Usage
+
+1. **Create a `_fetch.json`** file in your project directory
+2. **Configure your fetch operations** (see examples below)
+3. **Run Regolith**:
+   ```bash
+   regolith run
+   ```
+
+---
+
+## 🎯 How It Works
 1. Place a `_fetch.json` file in any subdirectory of your project (e.g., inside a data or pack folder).
 2. The filter reads each `_fetch.json`, downloads the specified files/folders from GitHub, and copies them to the desired location.
 3. The filter removes the `_fetch.json` after processing, ensuring a clean workspace.

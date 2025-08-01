@@ -1,25 +1,36 @@
-# Jsonify
+# 🗃️ Jsonify
 
-Jsonify is a regolith filter aimed at opening more doors and ways to work with Minecraft data files. First and foremost, it can convert readable filetypes like YAML, JSON5, JSONC, and TOML to standard JSON. Secondly, it expands the syntax of standard JSON with extra features that will be added as the filter is developed, making authoring and maintaining Minecraft data files easier and more flexible.
+[![Regolith Filter](https://img.shields.io/badge/Regolith-Filter-blue)](https://regolith-mc.github.io/)
+[![Python](https://img.shields.io/badge/Python-3.7%2B-brightgreen)](https://python.org)
 
-## Why Use Other Formats?
+**A powerful Regolith filter for converting multiple file formats to JSON and enhancing your Minecraft development workflow.**
 
-YAML, TOML, and JSON5 offer advantages over standard JSON, such as:
-- Improved readability for complex data
-- Support for multiline strings
-- Easier editing and maintenance
+Jsonify opens more doors and ways to work with Minecraft data files by converting readable formats like YAML, JSON5, JSONC, and TOML to standard JSON, while expanding JSON syntax with helpful features.
 
-Jsonify lets you use these formats for authoring, then convert them to JSON for compatibility.
+---
 
-## Features
+## 🎯 Why Use Other Formats?
 
-- Converts YAML (`.yaml`, `.yml`), JSON5 (`.json5`), JSONC (`.jsonc`), and TOML (`.toml`) files to JSON.
-- Recursively processes all files in a directory tree.
-- Optionally deletes the original files after conversion.
-- Handles date and time objects, serializing them as ISO strings.
-- **Supports multiline string normalization using the `>-` feature.**
+YAML, TOML, and JSON5 offer significant advantages over standard JSON:
 
-## Multiline String Normalization (`>-` Feature)
+- 📖 **Improved readability** for complex data structures
+- 📝 **Support for multiline strings** and comments
+- ✏️ **Easier editing and maintenance** of large files
+- 🔧 **Enhanced developer experience** with better syntax
+
+Jsonify lets you author in these human-friendly formats, then converts them to JSON for Minecraft compatibility.
+
+--- ## ✨ Features
+
+- 🔄 **Multi-Format Support**: Converts YAML (`.yaml`, `.yml`), JSON5 (`.json5`), JSONC (`.jsonc`), and TOML (`.toml`) files to JSON
+- 📁 **Recursive Processing**: Handles entire directory trees automatically
+- 🗑️ **Clean Workflow**: Optionally deletes original files after conversion
+- 📅 **Smart Serialization**: Handles date and time objects as ISO strings
+- 📄 **Multiline String Normalization**: Advanced `>-` feature for cleaner syntax
+
+---
+
+## 🧩 Multiline String Normalization (`>-` Feature)
 
 Jsonify can normalize multiline strings in your data using two methods, controlled by the `multiline_method` filter setting:
 
@@ -49,44 +60,136 @@ Jsonify can normalize multiline strings in your data using two methods, controll
 
 Set your preferred method in the filter settings.
 
-## Filter Settings
+---
 
-You can configure the filter in your Regolith profile:
+## ⚙️ Configuration
 
-```jsonc
+Configure the filter in your Regolith profile:
+
+```json
 {
   "filter": "jsonify",
   "settings": {
     "folders": ["data", "RP", "BP"],
-    "multiline_method": "first_index" // or "key_suffix"
+    "multiline_method": "first_index",
+    "delete_original": true
   }
 }
 ```
 
-- `folders`: List of folders to process.
-- `multiline_method`: Choose `"first_index"` or `"key_suffix"` for multiline normalization.
+### Settings Options
 
-## Installation
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `folders` | array | `["data", "RP", "BP"]` | Folders to process for conversion |
+| `multiline_method` | string | `"first_index"` | Choose `"first_index"` or `"key_suffix"` |
+| `delete_original` | boolean | `true` | Whether to delete original files after conversion |
 
-Run the filter from the command line:
+---
 
+## 🚀 Installation & Usage
+
+### Installation
 ```bash
 regolith install jsonify
 ```
 
-By default, it will process the current directory and delete the original files after conversion.
+### Requirements
+- **Python 3.11+** (for `tomllib`) or **Python 3.7+** with `tomli`
+- **ruamel.yaml**: `pip install ruamel.yaml`
+- **json5**: `pip install json5`
 
-## Requirements
-
-- Python 3.11+ (for `tomllib`). For older Python versions, install `tomli` and change the import to `import tomli as tomllib`.
-- `ruamel.yaml` for YAML support
-- `json5` for JSON5/JSONC support
-
-Install dependencies:
-
+### Install Dependencies
 ```bash
-pip install ruamel.yaml json5 tomli  # Only tomli if Python < 3.11
+# Python 3.11+
+pip install ruamel.yaml json5
+
+# Python < 3.11
+pip install ruamel.yaml json5 tomli
 ```
+
+### Basic Usage
+
+Add to your Regolith profile and run:
+```bash
+regolith run
+```
+
+The filter will automatically convert all supported files in your specified folders.
+
+---
+
+## 📁 Supported File Types
+
+| Format | Extensions | Description |
+|--------|------------|-------------|
+| **YAML** | `.yaml`, `.yml` | Human-readable data serialization |
+| **JSON5** | `.json5` | JSON with comments and trailing commas |
+| **JSONC** | `.jsonc` | JSON with comments |
+| **TOML** | `.toml` | Tom's Obvious Minimal Language |
+
+---
+
+## 🛠️ Advanced Examples
+
+### YAML to JSON Conversion
+**Input** (`config.yaml`):
+```yaml
+entity:
+  identifier: "mymod:custom_mob"
+  health: 20
+  description: |
+    This is a custom mob
+    with multiple lines
+```
+
+**Output** (`config.json`):
+```json
+{
+  "entity": {
+    "identifier": "mymod:custom_mob",
+    "health": 20,
+    "description": "This is a custom mob\nwith multiple lines"
+  }
+}
+```
+
+### Multiline Molang Example
+**Input**:
+```json
+{
+  "condition": [">-", "query.is_sprinting", "&&", "query.is_on_ground", "&&", "!query.is_jumping"]
+}
+```
+
+**Output**:
+```json
+{
+  "condition": "query.is_sprinting && query.is_on_ground && !query.is_jumping"
+}
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+
+---
+
+*Made with ❤️ for Minecraft Bedrock creators*
 
 ## How It Works
 

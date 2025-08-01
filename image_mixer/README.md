@@ -1,47 +1,62 @@
+# 🖼️ Image Mixer
+
+[![Regolith Filter](https://img.shields.io/badge/Regolith-Filter-blue)](https://regolith-mc.github.io/)
+[![Python](https://img.shields.io/badge/Python-3.7%2B-brightgreen)](https://python.org)
+
 <p align="center">
  <img width="100%" alt="banner" src="https://github.com/user-attachments/assets/3b42c3dc-2fbf-4659-b170-946c7c2e2a4b" />
 </p>
 
-A flexible, scriptable Python tool for batch-generating composite images from layered PNGs, with support for anchor positioning, scaling, offsets, and customizable output filenames.
+**A flexible, scriptable Python tool for batch-generating composite images from layered PNGs, with support for anchor positioning, scaling, offsets, and customizable output filenames.**
 
-## Why use this?
+---
+
+## 🎯 Why Use This?
 
 This script is ideal for creating many composite image combinations from a few input images. It's especially handy for:
 
-- Generating recipe images (e.g., for games, apps, or wikis)
-- Adding backgrounds, frames, or effects to icons for UI elements
-- Combining texture variants for resource packs, modding, or asset pipelines
-- Automating the creation of image sets for GUIs, previews, or batch art tasks
+- 🍳 **Recipe Images**: Generate recipe guides for games, apps, or wikis
+- 🎨 **UI Elements**: Add backgrounds, frames, or effects to icons
+- 🧩 **Texture Variants**: Combine texture variations for resource packs and modding
+- ⚡ **Batch Automation**: Create image sets for GUIs, previews, or batch art tasks
 
-- Fast: Uses multithreading to generate images in parallel for much faster batch processing.
-- Combine multiple image layers (backgrounds, frames, icons, etc.) into new images.
-- Supports both single files and directories of images for each layer.
-- Flexible anchor system: overlays are centered by default, but you can place overlays at corners, edges, or custom offsets.
-- Powerful scaling: scale overlays uniformly, non-uniformly, or to an exact pixel size, with selectable resampling methods (nearest, bilinear, bicubic, lanczos, box, hamming).
-- Output filenames are fully customizable using templates (e.g., `output_{index}_{layer1}_{layer2}.png`).
-- Simple, human-readable JSON configuration for batch processing.
+---
 
-## Requirements
+## ✨ Features
 
-- Python 3.7+
-- [Pillow](https://python-pillow.org/) (PIL fork)
+- ⚡ **Multi-threaded Processing**: Parallel image generation for faster batch processing
+- 🧩 **Layer Combination**: Merge multiple image layers (backgrounds, frames, icons, etc.)
+- 📁 **Flexible Input**: Supports both single files and entire directories for each layer
+- 🎯 **Anchor System**: Precise positioning with corners, edges, or custom offsets
+- 🔍 **Advanced Scaling**: Multiple resampling methods (nearest, bilinear, bicubic, lanczos, box, hamming)
+- 📝 **Custom Filenames**: Fully customizable output filename templates
+- ⚙️ **JSON Configuration**: Simple, human-readable configuration files
 
-Install dependencies:
+---
 
+## 🚀 Quick Start
+
+### Installation
 ```bash
-pip install pillow
+regolith install image_mixer
 ```
 
-## Usage
+### Requirements
+- **Python 3.7+**
+- **Pillow (PIL)**: `pip install pillow`
 
-1. **Configure your layers** in a JSON file (see example below).
-2. **Run regolith:**
+### Basic Usage
+
+1. **Configure your layers** in a JSON file (see example below)
+2. **Run Regolith**:
    ```bash
    regolith run
    ```
-3. **Find your output images** in the specified output folder.
+3. **Find your output images** in the specified output folder
 
-## Example Configuration
+---
+
+## ⚙️ Configuration
 
 ### Note on Empty Layer Variants
 
@@ -305,13 +320,27 @@ This tool supports JSON Schema for config files, enabling:
 
 <img src="https://github.com/user-attachments/assets/71738963-fc10-4ad4-adab-d437dc59defd" alt="3" style="image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; max-width: 600px;" />
 
-## License
+---
 
-MIT
+## 🤝 Contributing
+
+We welcome contributions! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test with various image combinations
+5. Submit a pull request
 
 ---
 
-## Changelog
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+
+---
+
+*Made with ❤️ for Minecraft Bedrock creators*
 
 ### 1.2.0 (2025-07-25)
 
