@@ -15,7 +15,7 @@ A curated collection of **custom Regolith filters** for Minecraft Bedrock Editio
 | 🎨 | [Aseprite Convert](./aseprite_convert/) | Convert Aseprite files into PNGs in multiple modes, including spritesheets and atlas. |
 | 🥚 | [Auto Spawn Egg](./auto_spawn_egg/)     | Auto-generate spawn egg colors for custom entities based on dominant texture colors.  |
 | 📦 | [Fetcher](./fetcher/)                   | Download files or folders from GitHub into your Minecraft project.                    |
-| 🖼️ | [Image Mixer](./image_mixer/)           | Batch-generate composite images from layered PNGs with advanced positioning/scaling.  |
+| <img src="./image_mixer/images/banner.png" width="100" height="100"> | [Image Mixer](./image_mixer/)           | Batch-generate composite images from layered PNGs with advanced positioning/scaling.  |
 | 🌐 | [MCLocalize](./mclocalize/)             | Manage localization files for multiple languages in Bedrock Edition.                  |
 | 🔄 | [Replacements](./replacements/)         | Perform project-wide intelligent string replacements for identifiers and namespaces.  |
 | 🗃️ | [Jsonify](./jsonify/)                   | Convert YAML, JSON5, JSONC, and TOML files to JSON recursively.                       |
