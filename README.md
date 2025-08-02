@@ -1,30 +1,34 @@
-# 🎮 Pixelmancer's Regolith Filters
+<div align="center">
+  <img src="./main_banner.png" alt="main banner" width="100%">
+</div>
 
-[![GitHub](https://img.shields.io/badge/GitHub-regolith--filters-blue?logo=github)](https://github.com/thePixelmancer/regolith-filters)
-[![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
-[![Regolith](https://img.shields.io/badge/Regolith-Compatible-purple)](https://github.com/Bedrock-OSS/regolith)
+<p align="left">
+  <a href="https://github.com/thePixelmancer/regolith-filters"><img src="https://img.shields.io/badge/GitHub-regolith--filters-blue?logo=github" alt="GitHub"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="License"></a>
+  <a href="https://github.com/Bedrock-OSS/regolith"><img src="https://img.shields.io/badge/Regolith-Compatible-purple" alt="Regolith"></a>
+</p>
 
 A curated collection of **custom Regolith filters** for Minecraft Bedrock Edition development. These filters help automate common tasks, streamline workflows, and enhance your Bedrock Edition project development experience.
 
 > 🚀 **Ready to supercharge your Minecraft development?** Each filter is designed to solve real problems that Bedrock Edition developers face daily.
 
---- 📦 Available Filters
+# 📦 Available Filters
 
-|                 | Link                                    | Short Description                                                                     |
-| ------------------- | --------------------------------------- | ------------------------------------------------------------------------------------- |
-| 🎨 | [Aseprite Convert](./aseprite_convert/) | Convert Aseprite files into PNGs in multiple modes, including spritesheets and atlas. |
-| 🥚 | [Auto Spawn Egg](./auto_spawn_egg/)     | Auto-generate spawn egg colors for custom entities based on dominant texture colors.  |
-| 📦 | [Fetcher](./fetcher/)                   | Download files or folders from GitHub into your Minecraft project.                    |
-| <img src="./image_mixer/images/icon.png" width="100" height="100"> | [Image Mixer](./image_mixer/)           | Batch-generate composite images from layered PNGs with advanced positioning/scaling.  |
-| 🌐 | [MCLocalize](./mclocalize/)             | Manage localization files for multiple languages in Bedrock Edition.                  |
-| 🔄 | [Replacements](./replacements/)         | Perform project-wide intelligent string replacements for identifiers and namespaces.  |
-| 🗃️ | [Jsonify](./jsonify/)                   | Convert YAML, JSON5, JSONC, and TOML files to JSON recursively.                       |
+|                                                                     | Link                                    | Short Description                                                                     |
+| ------------------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------- |
+| 🎨                                                                  | [Aseprite Convert](./aseprite_convert/) | Convert Aseprite files into PNGs in multiple modes, including spritesheets and atlas. |
+| 🥚                                                                  | [Auto Spawn Egg](./auto_spawn_egg/)     | Auto-generate spawn egg colors for custom entities based on dominant texture colors.  |
+| 📦                                                                  | [Fetcher](./fetcher/)                   | Download files or folders from GitHub into your Minecraft project.                    |
+| <img src="./image_mixer/images/icon.png" width="100" height="100">  | [Image Mixer](./image_mixer/)           | Batch-generate composite images from layered PNGs with advanced positioning/scaling.  |
+| 🌐                                                                  | [MCLocalize](./mclocalize/)             | Manage localization files for multiple languages in Bedrock Edition.                  |
+| 🔄                                                                  | [Replacements](./replacements/)         | Perform project-wide intelligent string replacements for identifiers and namespaces.  |
+| 🗃️                                                                  | [Jsonify](./jsonify/)                   | Convert YAML, JSON5, JSONC, and TOML files to JSON recursively.                       |
 | <img src="./multifeature/images/icon.png" width="100" height="100"> | [MultiFeature](./multifeature/)         | Combine multiple feature definitions in one file and split into .json during build.   |
-| 🍳 | [Recipe Image Gen](./recipe_image_gen/) | Generate recipe images automatically from crafting recipe definitions.                 |
+| 🍳                                                                  | [Recipe Image Gen](./recipe_image_gen/) | Generate recipe images automatically from crafting recipe definitions.                |
 
 ---
 
-*Detailed filter documentation, installation guides, and configuration examples are provided below.*
+_Detailed filter documentation, installation guides, and configuration examples are provided below._
 
 ## 🚀 Quick Start
 
