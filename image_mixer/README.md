@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.7%2B-brightgreen)](https://python.org)
 
 <p align="center">
- <img width="100%" alt="banner" src="https://github.com/user-attachments/assets/3b42c3dc-2fbf-4659-b170-946c7c2e2a4b" />
+ <img width="100%" alt="banner" src="./images/banner.png" />
 </p>
 
 **A flexible, scriptable Python tool for batch-generating composite images from layered PNGs, with support for anchor positioning, scaling, offsets, and customizable output filenames.**
