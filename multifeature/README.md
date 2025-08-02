@@ -40,7 +40,7 @@ However, **this filter is purposefully simpler**.
 - You only want to combine multiple features into a single file.
 - You don’t need YAML, templating, or logic.
 - You already use other filters for those tasks.
-- You want to avoid conflicts with more opinionated filters like `MiniFeature`.
+- You want to avoid conflicts with more opinionated filters.
 
 ---
 
