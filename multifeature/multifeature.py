@@ -125,8 +125,10 @@ def process_multifeature(file_path: Path):
     with file_path.open("r", encoding="utf-8") as f:
         data = json5.load(f)
 
-    if not isinstance(data, list):
-        raise ValueError(f"Expected a list in file [{file_path}]")
+    if isinstance(data, dict):
+        data = [data]
+    elif not isinstance(data, list):
+        raise ValueError(f"Expected a list or object in file [{file_path}]")
 
     for feature in data:
         if not isinstance(feature, dict):
@@ -199,7 +201,10 @@ if __name__ == "__main__":
                 "fileMatch": ["*.multifeature.json"],
                 "url": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/multifeature/data/multifeature.schema.json",
             }
-        ]
+        ],
+        "yaml.schemas": {
+            "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/multifeature/data/multifeature.schema.json": "*.multifeature.yaml"
+        },
     }
 
     vscode_project_path = ROOT_DIR / ".vscode" / "settings.json"
