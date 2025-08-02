@@ -14,9 +14,17 @@ if len(sys.argv) > 1:
     settings = json.loads(sys.argv[1])
 FOLDERS = settings.get("folders", ["RP", "BP"])
 MULTILINE_METHOD = settings.get("multiline_method", "first_index")
+
+def yaml_loader(f):
+    docs = list(yaml.load_all(f))
+    if len(docs) == 1:
+        return docs[0]  # Single document
+    else:
+        return docs  # Multiple documents as a list
+
 EXTENSION_LOADERS = {
-    ".yaml": lambda f: list(yaml.load_all(f)),
-    ".yml": lambda f: list(yaml.load_all(f)),
+    ".yaml": yaml_loader,
+    ".yml": yaml_loader,
     ".json5": json5.load,
     ".jsonc": json5.load,
     ".toml": lambda f: tomllib.load(f),
