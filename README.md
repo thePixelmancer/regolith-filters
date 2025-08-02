@@ -2,7 +2,7 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-regolith--filters-blue?logo=github)](https://github.com/thePixelmancer/regolith-filters)
 [![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
-[![Regolith](https://img.shields.io/badge/Regolith-Compatible-purple)](https://regolith-mc.github.io/)
+[![Regolith](https://img.shields.io/badge/Regolith-Compatible-purple)](https://github.com/Bedrock-OSS/regolith)
 
 A curated collection of **custom Regolith filters** for Minecraft Bedrock Edition development. These filters help automate common tasks, streamline workflows, and enhance your Bedrock Edition project development experience.
 
@@ -72,7 +72,7 @@ Add filters to your Regolith profile in `config.json`:
 
 ### General Requirements
 
-- [Regolith](https://regolith-mc.github.io/) - Bedrock Edition development framework
+- [Regolith](https://github.com/Bedrock-OSS/regolith) - Bedrock Edition development framework
 - Python 3.7+ (for Python-based filters)
 
 ### Filter-Specific Requirements
@@ -126,7 +126,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Thanks to the [Regolith](https://regolith-mc.github.io/) team for creating an amazing development framework
+- Thanks to the [Regolith](https://github.com/Bedrock-OSS/regolith) team for creating an amazing development framework
 - The Minecraft Bedrock Edition community for inspiration and feedback
 - Contributors who help improve and maintain these filters
 

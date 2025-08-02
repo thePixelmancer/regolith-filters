@@ -1,9 +1,13 @@
+# 🧩 MultiFeature
+
+[![Regolith Filter](https://img.shields.io/badge/Regolith-Filter-blue)](https://github.com/Bedrock-OSS/regolith)
+[![Python](https://img.shields.io/badge/Python-3.7%2B-brightgreen)](https://python.org)
+
 <div align="center">
   <img src="./images/banner.png" alt="MultiFeature Filter Banner" width="100%">
 </div>
 
-# a Regolith Filter
-A lightweight Regolith filter for simplifying Minecraft feature generation.
+**A lightweight Regolith filter for simplifying Minecraft feature generation.**
 
 ## 🧩 What is this?
 
