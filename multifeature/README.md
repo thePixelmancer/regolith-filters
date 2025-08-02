@@ -46,15 +46,20 @@ However, **this filter is purposefully simpler**.
 
 ## 💡 How it works
 
-This filter scans the `BP/multifeatures/` folder and finds all files ending in `.multifeature.json`. Each of these files is expected to be a **list of feature objects** (rather than a single feature). The filter will:
+This filter scans the `BP/multifeatures/` folder and finds all files ending in `.multifeature.json`. Each of these files can contain either:
+- **A single feature/feature_rule object**
+- **An array of feature/feature_rule objects**
 
-1. Parse each feature inside the list.
+The filter will:
+
+1. Parse each feature (converting single objects to arrays automatically).
 2. Update its identifier and `places_feature` fields using a custom subfolder prefix (if configured).
 3. Export it to `BP/features/` or `BP/feature_rules/`, depending on the feature type.
 4. Automatically create the correct folder structure.
 
 ### Example Input (`my_features.multifeature.json`)
 
+**Array format:**
 ```json
 [
   {
@@ -69,6 +74,20 @@ This filter scans the `BP/multifeatures/` folder and finds all files ending in `
   },
   ...
 ]
+```
+
+**Single object format - no difference than vanilla:**
+```json
+{
+  "format_version": "1.18.0",
+  "minecraft:scatter_feature": {
+    "description": {
+      "identifier": "mymod:single_feature"
+    },
+    "places_feature": "mymod:some_block",
+    ...
+  }
+}
 ```
 
 ## 📦 Integration
