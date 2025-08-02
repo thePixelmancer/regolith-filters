@@ -1,6 +1,6 @@
 # 🔄 Replacements
 
-[![Regolith Filter](https://img.shields.io/badge/Regolith-Filter-blue)](https://regolith-mc.github.io/)
+[![Regolith Filter](https://img.shields.io/badge/Regolith-Filter-blue)](https://github.com/Bedrock-OSS/regolith)
 [![Python](https://img.shields.io/badge/Python-3.7%2B-brightgreen)](https://python.org)
 
 **Powerful string replacement filter for automating namespace and identifier management in Bedrock Edition packs.**
