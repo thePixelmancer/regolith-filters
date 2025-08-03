@@ -9,6 +9,10 @@
   "regolith": {
     "dataPath": "./packs/data",
     "filterDefinitions": {
+      "jsonify": {
+        "url": "github.com/thePixelmancer/regolith-filters",
+        "version": "1.0.3"
+      },
       "multifeature": {
         "runWith": "python",
         "script": "../multifeature.py"
@@ -17,19 +21,25 @@
     "formatVersion": "1.4.0",
     "profiles": {
       "default": {
+        "export": {
+          "build": "standard",
+          "readOnly": false,
+          "target": "local"
+        },
         "filters": [
+          {
+            "filter": "jsonify",
+            "settings": {
+              "folders": ["BP/feature_rules", "BP/features", "BP/multifeatures"]
+            }
+          },
           {
             "filter": "multifeature",
             "settings": {
               "subfolders": "@team/@proj/"
             }
           }
-        ],
-        "export": {
-          "build": "standard",
-          "readOnly": false,
-          "target": "local"
-        }
+        ]
       }
     }
   }

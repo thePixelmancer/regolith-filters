@@ -2,29 +2,15 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://example.com/multifeature.schema.json",
   "title": "Minecraft MultiFeature File",
-  "oneOf": [
-    {
-      "type": "array",
-      "items": {
-        "anyOf": [
-          {
-            "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/0967f0790f9846407585b1a518e33cdf3c30219c/behavior/features/features.json"
-          },
-          {
-            "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/0967f0790f9846407585b1a518e33cdf3c30219c/behavior/feature_rules/feature_rules.json"
-          }
-        ]
+  "type": "array",
+  "items": {
+    "anyOf": [
+      {
+        "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/0967f0790f9846407585b1a518e33cdf3c30219c/behavior/features/features.json"
+      },
+      {
+        "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/0967f0790f9846407585b1a518e33cdf3c30219c/behavior/feature_rules/feature_rules.json"
       }
-    },
-    {
-      "anyOf": [
-        {
-          "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/0967f0790f9846407585b1a518e33cdf3c30219c/behavior/features/features.json"
-        },
-        {
-          "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/0967f0790f9846407585b1a518e33cdf3c30219c/behavior/feature_rules/feature_rules.json"
-        }
-      ]
-    }
-  ]
+    ]
+  }
 }
