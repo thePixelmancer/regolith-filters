@@ -155,16 +155,32 @@ def process_multifeature(file_path: Path):
             raise ValueError(f"Feature in [{file_path}] has no identifier")
 
         ns_id, name_id = remove_namespace(identifier)
-        suffix = normalize_path(SUBFOLDERS)
-        new_identifier = f"{ns_id}{suffix}{name_id}"
+        subfolders_prefix = normalize_path(SUBFOLDERS)
+
+        # Check for invalid characters in feature rule identifiers
+        if is_rule and "/" in name_id:
+            raise ValueError(
+                f"\n{"-" * 80}\n"
+                f"Feature rule in [{file_path}] has '/' in identifier '{identifier}'.\n"
+                f"Feature rules need to have the same ID as the filename, and '/' isn't allowed in filenames.\n"
+                f"Consider renaming '{identifier}' to use '_' or '-' instead of '/'\n"
+                f"{"-" * 80}"
+            )
+
+        if is_rule:
+            # Feature rules: don't modify the identifier, keep it as-is
+            new_identifier = identifier
+        else:
+            # Features: add subfolder path to identifier
+            new_identifier = f"{ns_id}{subfolders_prefix}{name_id}"
 
         desc["identifier"] = new_identifier
 
         # Only process places_feature if it exists
         if places:
             ns_places, name_places = remove_namespace(places)
-            new_places = f"{ns_places}{suffix}{name_places}"
-            
+            new_places = f"{ns_places}{subfolders_prefix}{name_places}"
+
             if is_rule:
                 desc["places_feature"] = new_places
             else:
@@ -173,7 +189,10 @@ def process_multifeature(file_path: Path):
         # Output path
         category = "feature_rules" if is_rule else "features"
         subdirs = SUBFOLDERS.split("/") if SUBFOLDERS else []
-        output_path = Path("BP", category, *subdirs, f"{name_id}.json")
+
+        filename = f"{name_id}.json"
+
+        output_path = Path("BP", category, *subdirs, filename)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         with output_path.open("w", encoding="utf-8") as out_f:
