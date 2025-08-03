@@ -11,7 +11,7 @@
     "filterDefinitions": {
       "jsonify": {
         "url": "github.com/thePixelmancer/regolith-filters",
-        "version": "1.0.3"
+        "version": "1.0.4"
       },
       "multifeature": {
         "runWith": "python",

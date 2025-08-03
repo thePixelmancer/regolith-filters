@@ -3,54 +3,15 @@ import json
 import json5
 import shutil
 import sys
-import os
-from pathlib import Path
-import json
-from typing import Union
+import io
+from pretty_print import (
+    print_success,
+    print_error,
+    print_warning,
+    print_info,
+)
 
-# -------------------------------------------------------------------------------------- #
-# Configuration
-# -------------------------------------------------------------------------------------- #
-SETTINGS = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
-SUBFOLDERS = SETTINGS.get("subfolders", "")
-
-
-# -------------------------------------------------------------------------------------- #
-# Utility Functions
-# -------------------------------------------------------------------------------------- #
-def deep_merge_dicts(base_data, new_data):
-    """
-    Recursively merges new_data into base_data.
-    - Merges nested dictionaries
-    - Appends to lists (avoids duplicates in json.schemas)
-    """
-    result = base_data.copy()
-    for key, value in new_data.items():
-        if key in result:
-            if isinstance(result[key], dict) and isinstance(value, dict):
-                result[key] = deep_merge_dicts(result[key], value)
-            elif isinstance(result[key], list) and isinstance(value, list):
-                # Special handling for json.schemas to avoid duplicate 'url'
-                if key == "json.schemas":
-                    existing_urls = {
-                        item.get("url")
-                        for item in result[key]
-                        if isinstance(item, dict)
-                    }
-                    for item in value:
-                        if (
-                            isinstance(item, dict)
-                            and item.get("url") not in existing_urls
-                        ):
-                            result[key].append(item)
-                            existing_urls.add(item.get("url"))
-                else:
-                    result[key].extend(x for x in value if x not in result[key])
-            else:
-                result[key] = value  # Overwrite scalar or type mismatch
-        else:
-            result[key] = value
-    return result
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 
 def remove_namespace(value: str) -> tuple[str, str]:
@@ -65,62 +26,61 @@ def remove_namespace(value: str) -> tuple[str, str]:
     return "", value
 
 
-def normalize_path(path: str) -> str:
-    """
-    Normalizes a path string by removing leading slashes
-    and ensuring exactly one trailing slash if not empty.
-    """
-    path = path.lstrip("/")
-    return f"{path}/" if path and not path.endswith("/") else path
+def process_feature(feature: dict, file_path: Path):
+    # --------------------- Getting basic information from the feature --------------------- #
+    if not isinstance(feature, dict):
+        print_error(f"Feature in [{file_path}] is not an object")
+        sys.exit(1)
+
+    if "format_version" not in feature or len(feature) != 2:
+        print_error(
+            f"Features in [{file_path}] must contain 'format_version' and one feature type."
+        )
+        sys.exit(1)
+
+    feature_type = next(key for key in feature if key != "format_version")
+    feature_data = feature[feature_type]
+
+    is_rule = feature_type == "minecraft:feature_rules"
+
+    desc = feature_data.get("description", {})
+    identifier = desc.get("identifier")
+
+    if not identifier:
+        print_error(f"Feature in [{file_path}] has no identifier")
+        sys.exit(1)
+
+    identifier_namespace, identifier_name = remove_namespace(identifier)
+
+    # Check for invalid characters in feature rule identifiers
+    if is_rule:
+        invalid_chars = ["/", "\\", ":", "*", "?", '"', "<", ">", "|"]
+        found_invalid = [char for char in invalid_chars if char in identifier_name]
+
+        if found_invalid:
+            print_error(
+                f"Invalid Character Error:\nFeature rule in [{file_path}] has invalid characters in identifier '{identifier}'."
+            )
+            print_warning(
+                f"Feature rules need to have the same ID as the filename, and these characters aren't allowed in filenames.Consider renaming '{identifier}' to use only letters, numbers, underscores, and hyphens"
+            )
+            sys.exit(1)
+
+    # Output path
+    category = "feature_rules" if is_rule else "features"
+    filename = f"{identifier_name}.json"
+
+    output_path = Path("BP", category, filename)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with output_path.open("w", encoding="utf-8") as out_f:
+        json.dump(feature, out_f, indent=2)
 
 
-def merge_json_files(base_data: Union[Path, dict], new_data: Union[Path, dict]):
-    """
-    Merges JSON content from `from_data` into `to_data`.
-
-    Arguments can be either file paths (`Path`) or already-loaded dictionaries.
-    If `to_data` is a file path, the result will be saved back to it.
-    If both arguments are dicts, the merged result is returned.
-    """
-
-    def load_json(source):
-        if isinstance(source, dict):
-            return source
-        elif isinstance(source, Path):
-            if not source.exists():
-                return {}
-            with source.open("r", encoding="utf-8") as f:
-                try:
-                    return json.load(f)
-                except json.JSONDecodeError:
-                    print(f"Warning: {source} is not valid JSON. Using empty dict.")
-                    return {}
-        else:
-            raise TypeError(f"Unsupported type for JSON input: {type(source)}")
-
-    # Load both sides
-    from_dict = load_json(new_data)
-    to_dict = load_json(base_data)
-
-    # Merge
-    merged_settings = deep_merge_dicts(to_dict, from_dict)
-
-    # If to_data is a Path, write result
-    if isinstance(base_data, Path):
-        base_data.parent.mkdir(parents=True, exist_ok=True)
-        with base_data.open("w", encoding="utf-8") as f:
-            json.dump(merged_settings, f, indent=2)
-    else:
-        return merged_settings
-
-
-# -------------------------------------------------------------------------------------- #
-# Main Processing Function
-# -------------------------------------------------------------------------------------- #
 def process_multifeature(file_path: Path):
     """
-    Processes a multifeature JSON file and rewrites its identifiers
-    based on the configured subfolder structure.
+    Processes a multifeature JSON/YAML file and outputs individual feature files
+    to their respective directories based on feature type and identifier.
     """
     with file_path.open("r", encoding="utf-8") as f:
         data = json5.load(f)
@@ -128,75 +88,11 @@ def process_multifeature(file_path: Path):
     if isinstance(data, dict):
         data = [data]
     elif not isinstance(data, list):
-        raise ValueError(f"Expected a list or object in file [{file_path}]")
+        print_error(f"Expected a list or object in file [{file_path}]")
+        sys.exit(1)
 
     for feature in data:
-        if not isinstance(feature, dict):
-            raise ValueError(f"Feature in [{file_path}] is not an object")
-
-        if "format_version" not in feature or len(feature) != 2:
-            raise ValueError(
-                "Feature must contain 'format_version' and one feature type."
-            )
-
-        feature_type = next(key for key in feature if key != "format_version")
-        feature_data = feature[feature_type]
-
-        is_rule = feature_type == "minecraft:feature_rules"
-        desc = feature_data.get("description", {})
-        identifier = desc.get("identifier")
-        places = (
-            desc.get("places_feature")
-            if is_rule
-            else feature_data.get("places_feature")
-        )
-
-        if not identifier:
-            raise ValueError(f"Feature in [{file_path}] has no identifier")
-
-        ns_id, name_id = remove_namespace(identifier)
-        subfolders_prefix = normalize_path(SUBFOLDERS)
-
-        # Check for invalid characters in feature rule identifiers
-        if is_rule and "/" in name_id:
-            raise ValueError(
-                f"\n{"-" * 80}\n"
-                f"Feature rule in [{file_path}] has '/' in identifier '{identifier}'.\n"
-                f"Feature rules need to have the same ID as the filename, and '/' isn't allowed in filenames.\n"
-                f"Consider renaming '{identifier}' to use '_' or '-' instead of '/'\n"
-                f"{"-" * 80}"
-            )
-
-        if is_rule:
-            # Feature rules: don't modify the identifier, keep it as-is
-            new_identifier = identifier
-        else:
-            # Features: add subfolder path to identifier
-            new_identifier = f"{ns_id}{subfolders_prefix}{name_id}"
-
-        desc["identifier"] = new_identifier
-
-        # Only process places_feature if it exists
-        if places:
-            ns_places, name_places = remove_namespace(places)
-            new_places = f"{ns_places}{subfolders_prefix}{name_places}"
-
-            if is_rule:
-                desc["places_feature"] = new_places
-            else:
-                feature_data["places_feature"] = new_places
-
-        # Output path
-        category = "feature_rules" if is_rule else "features"
-        subdirs = SUBFOLDERS.split("/") if SUBFOLDERS else []
-
-        filename = f"{name_id}.json"
-
-        output_path = Path("BP", category, *subdirs, filename)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with output_path.open("w", encoding="utf-8") as out_f:
-            json.dump(feature, out_f, indent=2)
+        process_feature(feature, file_path)
 
 
 # -------------------------------------------------------------------------------------- #
@@ -205,27 +101,23 @@ def process_multifeature(file_path: Path):
 if __name__ == "__main__":
     input_dir = Path("BP/multifeatures")
     if not input_dir.exists():
-        print(f"Input directory {input_dir} does not exist. Exiting.")
+        print_error(f"Input directory {input_dir} does not exist. Exiting.")
         sys.exit(1)
+
+    processed_files = 0
+
     for file_path in input_dir.glob("*.multifeature.json"):
         process_multifeature(file_path)
-        print(f"Processed {file_path}")
+        processed_files += 1
 
-    shutil.rmtree(input_dir)
-    # -------------------------------------------------------------------------------------- #
-    # Merge settings.json from data/.vscode/settings.json into project .vscode/settings.json
-    ROOT_DIR = Path(os.environ.get("ROOT_DIR", "."))
-    VSCODE_SETTINGS = {
-        "json.schemas": [
-            {
-                "fileMatch": ["*.multifeature.json"],
-                "url": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/multifeature/data/multifeature.schema.json",
-            }
-        ],
-        "yaml.schemas": {
-            "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/multifeature/data/multifeature.schema.json": "*.multifeature.yaml"
-        },
-    }
+    if processed_files:
+        print_success(f"Successfully processed {processed_files} multifeature file(s)")
+    else:
+        print_warning("No multifeature files found to process")
 
-    vscode_project_path = ROOT_DIR / ".vscode" / "settings.json"
-    merge_json_files(vscode_project_path, VSCODE_SETTINGS)
+    shutil.rmtree(input_dir)  # remove the input directory after processing
+
+    # Notify user about optional schema configuration
+    print_info(
+        "Optional: For IntelliSense support, visit the documentation to add schema configuration to your .vscode/settings.json"
+    )
