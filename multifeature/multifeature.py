@@ -91,10 +91,9 @@ def process_multifeature(file_path: Path):
 # Entrypoint
 # -------------------------------------------------------------------------------------- #
 if __name__ == "__main__":
+    print_section("MultiFeature", symbol="=", color=Colors.CYAN)
     input_dir = Path("BP/multifeatures")
-    if not input_dir.exists():
-        print_error(f"Input directory {input_dir} does not exist. Exiting.")
-        sys.exit(1)
+    input_dir.mkdir(parents=True, exist_ok=True)
 
     processed_files = 0
 
@@ -113,3 +112,4 @@ if __name__ == "__main__":
     print_info(
         "Optional: For IntelliSense support, visit the documentation to add schema configuration to your .vscode/settings.json"
     )
+    print_section(symbol="=", color=Colors.CYAN)
