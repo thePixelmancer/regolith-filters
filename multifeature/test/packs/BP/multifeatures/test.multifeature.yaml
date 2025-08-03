@@ -1,0 +1,107 @@
+---
+format_version: 1.13.0
+minecraft:feature_rules:
+  description:
+    identifier: "@namespace:giant_pin/e_tree.feature_rule"
+    places_feature: "@namespace:giant_pine_tree_aggregate.feature"
+  conditions:
+    placement_pass: "surface_pass"
+    minecraft:biome_filter:
+      - any_of:
+          - test: "has_biome_tag"
+            operator: "=="
+            value: "taiga"
+          - test: "has_biome_tag"
+            operator: "=="
+            value: "taiga_hills"
+  distribution:
+    scatter_chance: 1
+    iterations: 1
+    x:
+      distribution: "uniform"
+      extent: [0, 16]
+    y: "query.heightmap(variable.worldx, variable.worldz)"
+    z:
+      distribution: "uniform"
+      extent: [0, 16]
+---
+format_version: 1.18.0
+minecraft:aggregate_feature:
+  description:
+    identifier: "@namespace:giant_pine_tree_aggregate.feature"
+  features:
+    - "@namespace:giant_pine_tree.feature"
+    - "@namespace:hollowing_scatter.feature"
+  early_out: "none"
+---
+format_version: 1.13.0
+minecraft:weighted_random_feature:
+  description:
+    identifier: "@namespace:select_flower.feature"
+  features:
+    - - "@namespace:white_flower_feature"
+      - 1
+    - - "@namespace:red_flower_feature"
+      - 2
+    - - "@namespace:blue_flower_feature"
+      - 1
+    - - "@namespace:yellow_flower_feature"
+      - 4
+---
+format_version: 1.13.0
+minecraft:snap_to_surface_feature:
+  description:
+    identifier: "example:cave_vine_snapped_to_ceiling_feature"
+  feature_to_snap: "example:cave_vine_feature"
+  vertical_search_range: 12
+  surface: "ceiling"
+  allowed_surface_blocks:
+    - name: "minecraft:cobblestone"
+---
+format_version: 1.21.90
+minecraft:scatter_feature:
+  description:
+    identifier: "@namespace:hollowing_scatter.feature"
+  places_feature: "@namespace:hollowing_block.feature"
+  distribution:
+    coordinate_eval_order: "xzy"
+    scatter_chance: 100
+    iterations: 30
+    x: 1
+    y:
+      extent: [0, 30]
+      distribution: "fixed_grid"
+    z: 1
+  project_input_to_floor: false
+---
+format_version: 1.13.0
+minecraft:vegetation_patch_feature:
+  description:
+    identifier: "example:clay_pool_with_dripleaves_feature"
+  replaceable_blocks:
+    - "minecraft:clay"
+    - "minecraft:moss_block"
+    - "minecraft:sand"
+    - "minecraft:gravel"
+    - "minecraft:dirt"
+    - "minecraft:coarse_dirt"
+    - "minecraft:podzol"
+    - "minecraft:dirt_with_roots"
+    - "minecraft:grass_block"
+    - "minecraft:mycelium"
+    - "minecraft:stone"
+    - "minecraft:cave_vines"
+    - "minecraft:cave_vines_body_with_berries"
+    - "minecraft:cave_vines_head_with_berries"
+  ground_block: "minecraft:clay"
+  vegetation_feature: "minecraft:dripleaf_feature"
+  surface: "floor"
+  depth: 3
+  vertical_range: 5
+  vegetation_chance: 0.1
+  horizontal_radius:
+    range_min: 4
+    range_max: 8
+  extra_deep_block_chance: 0.8
+  extra_edge_column_chance: 0.7
+  waterlogged: true
