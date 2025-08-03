@@ -2,7 +2,7 @@
 format_version: 1.13.0
 minecraft:feature_rules:
   description:
-    identifier: "@namespace:giant_pin/e_tree.feature_rule"
+    identifier: "@namespace:giant_pine_tree.feature_rule"
     places_feature: "@namespace:giant_pine_tree_aggregate.feature"
   conditions:
     placement_pass: "surface_pass"
