@@ -153,21 +153,22 @@ def process_multifeature(file_path: Path):
 
         if not identifier:
             raise ValueError(f"Feature in [{file_path}] has no identifier")
-        if not places:
-            raise ValueError(f"Feature in [{file_path}] has no places_feature")
 
         ns_id, name_id = remove_namespace(identifier)
-        ns_places, name_places = remove_namespace(places)
-
         suffix = normalize_path(SUBFOLDERS)
         new_identifier = f"{ns_id}{suffix}{name_id}"
-        new_places = f"{ns_places}{suffix}{name_places}"
 
         desc["identifier"] = new_identifier
-        if is_rule:
-            desc["places_feature"] = new_places
-        else:
-            feature_data["places_feature"] = new_places
+
+        # Only process places_feature if it exists
+        if places:
+            ns_places, name_places = remove_namespace(places)
+            new_places = f"{ns_places}{suffix}{name_places}"
+            
+            if is_rule:
+                desc["places_feature"] = new_places
+            else:
+                feature_data["places_feature"] = new_places
 
         # Output path
         category = "feature_rules" if is_rule else "features"
