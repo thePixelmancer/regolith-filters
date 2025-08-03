@@ -9,11 +9,10 @@ import sys
 
 # --------------------------------- CONVERSION FEATURES --------------------------------- #
 yaml = YAML(typ="safe")
+SETTINGS = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
+FOLDERS = SETTINGS.get("folders", ["RP", "BP"])
+MULTILINE_METHOD = SETTINGS.get("multiline_method", "first_index")
 
-if len(sys.argv) > 1:
-    settings = json.loads(sys.argv[1])
-FOLDERS = settings.get("folders", ["RP", "BP"]) if settings else ["RP", "BP"]
-MULTILINE_METHOD = settings.get("multiline_method", "first_index") if settings else "first_index"
 
 def yaml_loader(f):
     docs = list(yaml.load_all(f))
