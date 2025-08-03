@@ -3,15 +3,7 @@ import json
 import json5
 import shutil
 import sys
-import io
-from pretty_print import (
-    print_success,
-    print_error,
-    print_warning,
-    print_info,
-)
-
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+from pretty_print import *
 
 
 def remove_namespace(value: str) -> tuple[str, str]:
@@ -62,7 +54,7 @@ def process_feature(feature: dict, file_path: Path):
                 f"Invalid Character Error:\nFeature rule in [{file_path}] has invalid characters in identifier '{identifier}'."
             )
             print_warning(
-                f"Feature rules need to have the same ID as the filename, and these characters aren't allowed in filenames.Consider renaming '{identifier}' to use only letters, numbers, underscores, and hyphens"
+                f"Feature rules need to have the same ID as the filename, and these characters aren't allowed in filenames. Consider renaming '{identifier}' to use only letters, numbers, underscores, and hyphens"
             )
             sys.exit(1)
 
