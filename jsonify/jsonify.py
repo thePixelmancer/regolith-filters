@@ -6,6 +6,7 @@ import json5
 import tomllib  # Use 'import tomli as tomllib' if on Python < 3.11
 from typing import Union
 import sys
+from pretty_print import *
 
 # --------------------------------- CONVERSION FEATURES --------------------------------- #
 yaml = YAML(typ="safe")
@@ -20,6 +21,7 @@ def yaml_loader(f):
         return docs[0]  # Single document
     else:
         return docs  # Multiple documents as a list
+
 
 EXTENSION_LOADERS = {
     ".yaml": yaml_loader,
@@ -55,6 +57,7 @@ def process_file(root_dir: Path, delete_original: bool = True):
         mode = "rb" if ext == ".toml" else "r"
         for path in root_dir.rglob(f"*{ext}"):
             convert_file(path, loader, mode=mode, delete_original=delete_original)
+            print(f"Converted {path} to {path.with_suffix('.json')}")
 
     # Normalize .json files only (not YAML or TOML)
     for path in root_dir.rglob("*.json"):
@@ -108,10 +111,12 @@ def normalize_multiline_json(path: Path):
 
 # -------------------------------------------------------------------------------------- #
 if __name__ == "__main__":
+    print_section("Jsonify", symbol="=", color=Colors.CYAN)
     for folder in FOLDERS:
         folder_path = Path(folder)
         if folder_path.is_dir():
-            print(f"Processing folder: {folder_path}")
             process_file(folder_path, delete_original=True)
+            print(f"Analyzed multiline JSONs in {folder_path}")
         else:
             print(f"Folder does not exist: {folder_path}")
+    print_section(symbol="=", color=Colors.CYAN)
