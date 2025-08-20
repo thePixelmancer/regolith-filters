@@ -40,18 +40,18 @@ def load_config():
 
 
 def convert_atlas_layers(imgpath: Path, aseprite_exe: str) -> list[str]:
-    """Convert Aseprite atlas file to separate layer PNGs."""
-    base_name = imgpath.stem.replace("_atlas", "")
+    """Convert Aseprite atlas file to separate layer PNGs with 16x16 grid alignment."""
     command = [
         aseprite_exe,
         "-b",  # Run in batch mode (no GUI)
         str(imgpath),  # Input .ase or .aseprite file
         "--split-layers",  # Export each layer separately
-        "--trim",  # Crop away transparent pixels
+        # "--trim",  # Trim to content
+        "--trim-by-grid",  # Then align to 16x16 grid
         "--save-as",
         f"{imgpath.parent / '{layer}'}.png",  # Export with layer name
     ]
-    print(f"[Atlas] Exporting {imgpath.name}")
+    print(f"[Atlas] Exporting {imgpath.name} with 16x16 grid alignment")
     return command
 
 
