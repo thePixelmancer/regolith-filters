@@ -3,8 +3,16 @@ import json
 import json5
 import shutil
 import sys
-from pretty_print import *
-
+from pretty_print import (
+    Colors,
+    print_section,
+    print_success,
+    print_error,
+    print_warning,
+    print_info,
+)
+SETTINGS = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
+USE_NAMESPACE = SETTINGS.get("use_namespace", False)
 
 def remove_namespace(value: str) -> tuple[str, str]:
     """
@@ -14,16 +22,12 @@ def remove_namespace(value: str) -> tuple[str, str]:
     """
     if ":" in value:
         namespace, name = value.split(":", 1)
-        return f"{namespace}:", name
+        return namespace, name
     return "", value
 
 
 def process_feature(feature: dict, file_path: Path):
     # --------------------- Getting basic information from the feature --------------------- #
-    if not isinstance(feature, dict):
-        print_error(f"Feature in [{file_path}] is not an object")
-        sys.exit(1)
-
     if "format_version" not in feature or len(feature) != 2:
         print_error(
             f"Features in [{file_path}] must contain 'format_version' and one feature type."
