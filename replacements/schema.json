@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Replacements Filter Schema",
+  "description": "Schema for the replacements filter settings in Regolith config.json",
+  "type": "object",
+  "required": ["replace"],
+  "properties": {
+    "replace": {
+      "type": "object",
+      "description": "A dictionary mapping strings to their replacements. Every occurrence of each key will be replaced with its corresponding value.",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "examples": [
+        {
+          "@namespace": "myproject",
+          "@team": "teamname",
+          "@proj": "project"
+        }
+      ]
+    },
+    "replace_nbt": {
+      "type": "boolean",
+      "description": "If true, the filter will also process .mcstructure files (NBT binary format) and replace strings in their string tags.",
+      "default": false
+    },
+    "rename_folders": {
+      "type": "boolean",
+      "description": "If true, the filter will also rename folders whose names contain any of the target strings, applying the same replacement rules as for file contents.",
+      "default": false
+    },
+    "rename_files": {
+      "type": "boolean",
+      "description": "If true, the filter will also rename files whose names contain any of the target strings.",
+      "default": false
+    },
+    "extension_whitelist": {
+      "type": "array",
+      "description": "A list of file extensions to process. Only files with these extensions will have their contents replaced (unless replace_nbt is enabled for .mcstructure files).",
+      "items": {
+        "type": "string",
+        "pattern": "^\\.[a-zA-Z0-9]+$"
+      },
+      "default": [".js", ".ts", ".json", ".material", ".mcfunction", ".txt", ".md"]
+    },
+    "paths": {
+      "type": "array",
+      "description": "A list of directories to search for files and folders to process.",
+      "items": {
+        "type": "string"
+      },
+      "default": ["RP", "BP"]
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "replace": {
+        "@namespace": "myproject",
+        "@team": "developers",
+        "@proj": "awesome"
+      },
+      "replace_nbt": true,
+      "rename_folders": false,
+      "rename_files": false,
+      "extensions": [".json", ".mcfunction", ".js"],
+      "paths": ["RP", "BP"]
+    }
+  ]
+}

@@ -68,7 +68,7 @@ Add the filter to your Regolith profile in your `config.json`:
 
 The filter accepts the following settings:
 
-- **replacements**:  
+- **replace**:  
   A dictionary mapping strings to their replacements.  
   Example:
   ```json
@@ -79,11 +79,15 @@ The filter accepts the following settings:
   }
   ```
 
+- **replace_nbt** (optional):  
+  If set to `true`, the filter will also process `.mcstructure` files (NBT binary format) and replace strings in their string tags.  
+  Default: `false`
+
 - **replace_folders** (optional):  
   If set to `true`, the filter will also rename folders whose names contain any of the target strings, applying the same replacement rules as for file contents.  
   Default: `false`
 
-- **extensions** (optional):  
+- **extension_whitelist** (optional):  
   A list of file extensions to process.  
   Default:  
   ```json
@@ -100,7 +104,40 @@ The filter accepts the following settings:
 ## How it works
 
 The filter scans all files in the specified `paths` with the given `extensions` and replaces every occurrence of the keys in `replace` with their corresponding values.  
+
+If `replace_nbt` is enabled, it will also process `.mcstructure` files (Minecraft structure files in NBT binary format). The filter recursively traverses all NBT tags and replaces strings found in TAG_String values.
+
 If `replace_folders` is enabled, it will also rename folders whose names match any of the target strings, applying the same replacement rules.
+
+### NBT Files (.mcstructure)
+
+**Important:** `pynbt` library must be installed for NBT support:
+```bash
+pip install pynbt
+```
+
+When `"replace_nbt": true` is set, the filter will:
+1. Read `.mcstructure` files as NBT (binary format)
+2. Recursively search all string values in the NBT structure
+3. Apply replacements to matched strings
+4. Save the modified NBT back to the `.mcstructure` file
+
+This is useful for replacing namespaces, team names, or project identifiers embedded in structure files.
+
+Example configuration:
+```json
+{
+  "filter": "replacements",
+  "settings": {
+    "replace": {
+      "@namespace": "myproject",
+      "@owner": "developer"
+    },
+    "replace_nbt": true,
+    "paths": ["RP", "BP"]
+  }
+}
+```
 
 ## Example
 
