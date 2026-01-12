@@ -30,7 +30,7 @@ def replace_in_nbt_file(file_path, replacements):
             nbt.save(io, little_endian=True)
     except Exception as e:
         print(f"Could not process NBT file {file_path}: {e}")
-        sys.exit()
+        sys.exit(1)
 
 
 def replace_in_text_file(file_path, replacements):
@@ -60,8 +60,8 @@ def rename_folders(root_path, replacements):
                 try:
                     old_dir.rename(new_dir)
                 except Exception as e:
-                    print(f"Could not rename folder {old_dir} to {new_dir}: {e}")
-                    sys.exit()
+                    print(f"Could not rename folder {old_dir.resolve()} to {new_dir.resolve()}: {e}")
+                    sys.exit(1)
 
 
 def rename_files(root_path, replacements):
@@ -77,7 +77,7 @@ def rename_files(root_path, replacements):
                     file.rename(new_file)
                 except Exception as e:
                     print(f"Could not rename file {file} to {new_file}: {e}")
-                    sys.exit()
+                    sys.exit(1)
 
 
 def main():
