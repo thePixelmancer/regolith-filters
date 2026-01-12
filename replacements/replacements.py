@@ -2,9 +2,38 @@ from pathlib import Path
 import json
 import sys
 import os
+from pynbt import NBTFile, TAG_String
 
 
-def replace_in_file(file_path, replacements):
+def replace_in_nbt(obj, replacements):
+    """Recursively replace strings in all NBT tag values."""
+    if isinstance(obj, TAG_String):
+        for target, replacement in replacements.items():
+            obj.value = obj.value.replace(target, replacement)
+    elif isinstance(obj, dict):
+        for key, value in obj.items():
+            replace_in_nbt(value, replacements)
+    elif isinstance(obj, list):
+        for item in obj:
+            replace_in_nbt(item, replacements)
+
+
+def replace_in_nbt_file(file_path, replacements):
+    """Replace strings in an NBT file (.mcstructure format)."""
+    try:
+        with open(file_path, "rb") as io:
+            nbt = NBTFile(io, little_endian=True)
+
+        replace_in_nbt(nbt.value, replacements)
+
+        with open(file_path, "wb") as io:
+            nbt.save(io, little_endian=True)
+    except Exception as e:
+        print(f"Could not process NBT file {file_path}: {e}")
+        sys.exit()
+
+
+def replace_in_text_file(file_path, replacements):
     try:
         text = file_path.read_text(encoding="utf-8")
     except Exception as e:
@@ -32,6 +61,7 @@ def rename_folders(root_path, replacements):
                     old_dir.rename(new_dir)
                 except Exception as e:
                     print(f"Could not rename folder {old_dir} to {new_dir}: {e}")
+                    sys.exit()
 
 
 def rename_files(root_path, replacements):
@@ -47,6 +77,7 @@ def rename_files(root_path, replacements):
                     file.rename(new_file)
                 except Exception as e:
                     print(f"Could not rename file {file} to {new_file}: {e}")
+                    sys.exit()
 
 
 def main():
@@ -55,8 +86,9 @@ def main():
         sys.exit()
     config = json.loads(sys.argv[1])
     replacements = config.get("replace", None)
-    extensions = config.get("extensions", None)
+    extensions = config.get("extension_whitelist", None)
     replace_folders = config.get("rename_folders", False)
+    replace_nbt = config.get("replace_nbt", False)
     replace_files = config.get("rename_files", False)
     paths = config.get("paths", ["RP", "BP"])
     if not replacements:
@@ -73,10 +105,14 @@ def main():
         # Then, replace in files
         for file in Path(path).rglob("*"):
             if file.is_file():
-                if extensions is None or (
+                # Handle NBT files (.mcstructure)
+                if replace_nbt and file.suffix == ".mcstructure":
+                    replace_in_nbt_file(file, replacements)
+                # Handle text files
+                elif extensions is None or (
                     isinstance(extensions, list) and file.suffix in extensions
                 ):
-                    replace_in_file(file, replacements)
+                    replace_in_text_file(file, replacements)
 
 
 if __name__ == "__main__":
