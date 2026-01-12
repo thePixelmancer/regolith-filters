@@ -91,7 +91,7 @@ The filter accepts the following settings:
   A list of file extensions to process.  
   Default:  
   ```json
-  [".js", ".ts", ".json", ".material", ".mcfunction", ".txt", ".md"]
+  []
   ```
 
 - **paths** (optional):  
@@ -105,7 +105,7 @@ The filter accepts the following settings:
 
 The filter scans all files in the specified `paths` with the given `extensions` and replaces every occurrence of the keys in `replace` with their corresponding values.  
 
-If `replace_nbt` is enabled, it will also process `.mcstructure` files (Minecraft structure files in NBT binary format). The filter recursively traverses all NBT tags and replaces strings found in TAG_String values.
+If `replace_nbt` is enabled, it will also process `.mcstructure` files (Minecraft structure files in NBT binary format). The filter recursively traverses all NBT tags and replaces strings found in TAG_String values. **Note:** NBT replacements work by walking through the NBT object structure rather than performing string-based replacements. This is set as a toggle to save processing time when NBT file processing is not needed.
 
 If `replace_folders` is enabled, it will also rename folders whose names match any of the target strings, applying the same replacement rules.
 
