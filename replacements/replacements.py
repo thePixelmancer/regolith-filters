@@ -3,6 +3,11 @@ import json
 import sys
 import os
 from pynbt import NBTFile, TAG_String
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
+
+# Lock for thread-safe printing
+print_lock = Lock()
 
 
 def replace_in_nbt(obj, replacements):
@@ -29,7 +34,8 @@ def replace_in_nbt_file(file_path, replacements):
         with open(file_path, "wb") as io:
             nbt.save(io, little_endian=True)
     except Exception as e:
-        print(f"Could not process NBT file {file_path}: {e}")
+        with print_lock:
+            print(f"Could not process NBT file {file_path}: {e}")
         sys.exit(1)
 
 
@@ -60,7 +66,10 @@ def rename_folders(root_path, replacements):
                 try:
                     old_dir.rename(new_dir)
                 except Exception as e:
-                    print(f"Could not rename folder {old_dir.resolve()} to {new_dir.resolve()}: {e}")
+                    with print_lock:
+                        print(
+                            f"Could not rename folder {old_dir.resolve()} to {new_dir.resolve()}: {e}"
+                        )
                     sys.exit(1)
 
 
@@ -76,43 +85,64 @@ def rename_files(root_path, replacements):
                 try:
                     file.rename(new_file)
                 except Exception as e:
-                    print(f"Could not rename file {file} to {new_file}: {e}")
+                    with print_lock:
+                        print(f"Could not rename file {file} to {new_file}: {e}")
                     sys.exit(1)
+
+
+def process_file(file, replacements, extensions, replace_nbt):
+    """Process a single file for replacements."""
+
+    # Handle text files
+    if (
+        extensions is None
+        or len(extensions) == 0
+        or (isinstance(extensions, list) and file.suffix in extensions)
+    ):
+        if replace_nbt and file.suffix == ".mcstructure":
+            replace_in_nbt_file(file, replacements)
+        else:
+            replace_in_text_file(file, replacements)
 
 
 def main():
     if len(sys.argv) < 2:
         print("No replacement settings defined.")
         sys.exit()
-    config = json.loads(sys.argv[1])
-    replacements = config.get("replace", None)
-    extensions = config.get("extension_whitelist", None)
-    replace_folders = config.get("rename_folders", False)
-    replace_nbt = config.get("replace_nbt", False)
-    replace_files = config.get("rename_files", False)
-    paths = config.get("paths", ["RP", "BP"])
-    if not replacements:
+
+    config_defaults = {
+        "replace": None,
+        "rename_folders": True,
+        "rename_files": True,
+        "replace_in_nbt": False,
+        "extension_whitelist": [],
+        "paths": ["RP", "BP"],
+    }
+    CONFIG = {**config_defaults, **json.loads(sys.argv[1])}
+
+    if not CONFIG["replace"]:
         print("No replacements defined.")
         sys.exit()
 
-    for path in paths:
+    for path in CONFIG["paths"]:
         # First, rename folders
-        if replace_folders:
-            rename_folders(path, replacements)
+        if CONFIG["rename_folders"]:
+            rename_folders(path, CONFIG["replace"])
         # Then, rename files
-        if replace_files:
-            rename_files(path, replacements)
-        # Then, replace in files
-        for file in Path(path).rglob("*"):
-            if file.is_file():
-                # Handle NBT files (.mcstructure)
-                if replace_nbt and file.suffix == ".mcstructure":
-                    replace_in_nbt_file(file, replacements)
-                # Handle text files
-                elif extensions is None or (
-                    isinstance(extensions, list) and file.suffix in extensions
-                ):
-                    replace_in_text_file(file, replacements)
+        if CONFIG["rename_files"]:
+            rename_files(path, CONFIG["replace"])
+        # Then, replace in files using thread pool for I/O operations
+        files_to_process = [file for file in Path(path).rglob("*") if file.is_file()]
+
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            for file in files_to_process:
+                executor.submit(
+                    process_file,
+                    file,
+                    CONFIG["replace"],
+                    CONFIG["extension_whitelist"],
+                    CONFIG["replace_in_nbt"],
+                )
 
 
 if __name__ == "__main__":
