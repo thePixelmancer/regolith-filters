@@ -26,10 +26,6 @@
           {
             "filter": "replacements",
             "settings": {
-              "rename_files": true,
-              "rename_folders": true,
-              "replace_in_nbt": true,
-              "extension_whitelist": [],
               "replace": {
                 "fizz": "buzz",
                 "foo": "bar"
