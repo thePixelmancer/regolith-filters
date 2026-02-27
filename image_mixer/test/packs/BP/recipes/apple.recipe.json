@@ -1,0 +1,17 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "minecraft:furnace_apple"
+    },
+
+    "unlock": [
+      {
+        "item": "minecraft:apple"
+      }
+    ],
+    "tags": ["furnace", "smoker", "campfire", "soul_campfire"],
+    "input": "minecraft:apple",
+    "output": "minecraft:stick"
+  }
+}
