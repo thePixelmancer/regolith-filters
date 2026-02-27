@@ -1,350 +1,254 @@
-# 🖼️ Image Mixer
+# Image Mixer
 
-[![Regolith Filter](https://img.shields.io/badge/Regolith-Filter-blue)](https://github.com/Bedrock-OSS/regolith)
-[![Python](https://img.shields.io/badge/Python-3.7%2B-brightgreen)](https://python.org)
-
-<p align="center">
- <img width="100%" alt="banner" src="./images/banner.png" />
-</p>
-
-**A flexible, scriptable Python tool for batch-generating composite images from layered PNGs, with support for anchor positioning, scaling, offsets, and customizable output filenames.**
+Image Mixer is a tool for compositing multiple image layers into a set of output images. Its primary use case is automatically generating recipe card images for a Minecraft Bedrock Edition addon — pulling ingredient textures directly from your behavior and resource packs — but it can be used for any image combination task.
 
 ---
 
-## 🎯 Why Use This?
+## How it works
 
-This script is ideal for creating many composite image combinations from a few input images. It's especially handy for:
-
-- 🍳 **Recipe Images**: Generate recipe guides for games, apps, or wikis
-- 🎨 **UI Elements**: Add backgrounds, frames, or effects to icons
-- 🧩 **Texture Variants**: Combine texture variations for resource packs and modding
-- ⚡ **Batch Automation**: Create image sets for GUIs, previews, or batch art tasks
+You define one or more **image mixers** in `data/image_mixer/config.json`. Each mixer describes a stack of image layers and how they should be combined. The tool resolves each layer to one or more image files, generates every combination, composites them in order, and saves the results.
 
 ---
 
-## ✨ Features
+## File structure
 
-- ⚡ **Multi-threaded Processing**: Parallel image generation for faster batch processing
-- 🧩 **Layer Combination**: Merge multiple image layers (backgrounds, frames, icons, etc.)
-- 📁 **Flexible Input**: Supports both single files and entire directories for each layer
-- 🎯 **Anchor System**: Precise positioning with corners, edges, or custom offsets
-- 🔍 **Advanced Scaling**: Multiple resampling methods (nearest, bilinear, bicubic, lanczos, box, hamming)
-- 📝 **Custom Filenames**: Fully customizable output filename templates
-- ⚙️ **JSON Configuration**: Simple, human-readable configuration files
-
----
-
-## 🚀 Quick Start
-
-### Installation
-```bash
-regolith install image_mixer
+```
+data/
+  image_mixer/
+    config.json          ← your mixer definitions
+    texture_map.json     ← manual texture path overrides
+BP/                      ← your behavior pack
+RP/                      ← your resource pack
 ```
 
-### Requirements
-- **Python 3.7+**
-- **Pillow (PIL)**: `pip install pillow`
-
-### Basic Usage
-
-1. **Configure your layers** in a JSON file (see example below)
-2. **Run Regolith**:
-   ```bash
-   regolith run
-   ```
-3. **Find your output images** in the specified output folder
-
 ---
 
-## ⚙️ Configuration
+## config.json
 
-### Note on Empty Layer Variants
-
-If a layer's `path` is set to `None`, an empty string (`""`), or the string `"none"` or `"None"`, or is not a valid file, that variant will be counted as an empty (blank) layer. **The combination will still be generated, but nothing will be overlayed for that layer in that output.**
-
-This allows you to intentionally include empty slots in your combinations. For example:
+The top-level structure is:
 
 ```jsonc
 {
-  "layers": [
-    {
-      "path": ["icon1.png", "none", "icon2.png"]
-    }
-  ]
+  "$schema": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/image_mixer/data/config.schema.json",
+  "image_mixers": [ /* one or more mixer definitions */ ]
 }
 ```
 
-In this example, the second variant will be empty (no overlay), but the output will still be generated for that combination.
+Including the `$schema` field is recommended — it enables autocomplete and validation in editors that support JSON Schema.
 
-## Combination Modes
+### Mixer definition
 
-You can control how image combinations are generated using the `combination_mode` option in your config:
+Each entry in `image_mixers` is a mixer object:
 
-**cartesian** (default): All possible combinations of all layers (cartesian product).
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `output_folder` | string | yes | Folder to write output images into. Created if it doesn't exist. |
+| `output_template` | string | no | Filename template for output images. Defaults to `image_{index}.png`. |
+| `combination_mode` | string | no | How layers are combined. `"cartesian"` (default) or `"zip"`. |
+| `layers` | array | yes | Ordered list of layer definitions. |
 
-- Example: 2 backgrounds × 3 frames × 3 icons = 18 images.
+### output_template
 
+The template is a Python format string. Available placeholders:
+
+| Placeholder | Value |
+|---|---|
+| `{index}` | Zero-based index of this combination |
+| `{layer0}` | Filename stem of the first layer's resolved image |
+| `{layer1}` | Filename stem of the second layer's resolved image |
+| `{layerN}` | ...and so on for each layer |
+
+Example: `"{index}_{layer1}_icon.png"` → `0_void_crystal_icon.png`
+
+If a placeholder references a layer whose path resolved to nothing (a blank slot), its value will be `"none"`.
+
+### combination_mode
+
+Controls how multiple layers with multiple variants are combined.
+
+**`cartesian`** (default) — generates every possible combination of variants across all layers. If layer A has 3 variants and layer B has 4 variants, you get 12 output images.
+
+**`zip`** — pairs variants by index, like Python's `zip`. If layer A has 3 variants and layer B has 3 variants, you get 3 output images: A[0]+B[0], A[1]+B[1], A[2]+B[2]. Layers with only one variant are broadcast (repeated) to match the length of the longest layer. Layers with any other mismatched count will raise an error.
+
+---
+
+## Layer definition
+
+Each layer in the `layers` array is an object:
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `path` | string, array, or blank | — | Image source. See [Path types](#path-types) below. |
+| `anchor` | string | `"center"` | Where to position this layer relative to the base. See [Anchors](#anchors). |
+| `offset` | [x, y] | `[0, 0]` | Pixel offset applied after anchoring. |
+| `scale` | number, [x, y], or object | none | Scale factor(s) to apply. See [Scale](#scale). |
+| `resample` | string | `"nearest"` | Resampling filter used when scaling. See [Resample](#resample). |
+| `blend_mode` | string | `"normal"` | Blend mode. Currently only `"normal"` (alpha composite) is applied. |
+
+The first layer in the list is always the **base image**. All subsequent layers are composited on top of it in order. The final output image has the same dimensions as the (scaled) base image.
+
+### Path types
+
+**Single file**
+```jsonc
+{ "path": "RP/textures/my_background.png" }
 ```
-backgrounds:  [A] [B]
-frames:       [1] [2] [3]
-icons:        [X] [Y] [Z]
+This layer always uses the same image. It contributes one variant.
 
-Output (cartesian):
-[A][1][X]  [A][1][Y]  [A][1][Z]
-[A][2][X]  [A][2][Y]  [A][2][Z]
-[A][3][X]  [A][3][Y]  [A][3][Z]
-[B][1][X]  [B][1][Y]  [B][1][Z]
-[B][2][X]  [B][2][Y]  [B][2][Z]
-[B][3][X]  [B][3][Y]  [B][3][Z]
+**Directory**
+```jsonc
+{ "path": "RP/textures/icons/" }
+```
+All `.png` files in the directory are used, sorted alphabetically. The layer contributes one variant per file.
+
+**Explicit list**
+```jsonc
+{ "path": ["RP/textures/a.png", "RP/textures/b.png", "none"] }
+```
+Each entry is used as a separate variant. Use `"none"`, `"None"`, `""`, or `null` for a blank slot (nothing composited for that variant).
+
+**Recipe variable**
+```jsonc
+{ "path": "{shaped_slot_0}" }
+```
+Resolved from recipe data at startup. The layer contributes one variant per recipe. See [Recipe variables](#recipe-variables).
+
+**Blank**
+```jsonc
+{ "path": "none" }
+```
+This layer is always skipped. Useful as a placeholder.
+
+### Anchors
+
+The anchor determines which point on the base image the overlay is aligned to before applying the offset.
+
+| Value | Position |
+|---|---|
+| `center` | Centre of the base image (default) |
+| `top_left` | Top-left corner |
+| `top_center` | Top edge, horizontally centred |
+| `top_right` | Top-right corner |
+| `left_center` | Left edge, vertically centred |
+| `right_center` | Right edge, vertically centred |
+| `bottom_left` | Bottom-left corner |
+| `bottom_center` | Bottom edge, horizontally centred |
+| `bottom_right` | Bottom-right corner |
+
+### Scale
+
+**Scalar** — multiply both dimensions by the same factor:
+```jsonc
+{ "scale": 2 }
 ```
 
-**zip**: Layers are matched by index (like Python's `zip`).
-
-- Single-image layers are automatically repeated (broadcast) to match the length of the longest layer.
-- Example: If you have 1 background, 3 frames, and 3 icons, the background is used for each frame+icon pair, producing 3 images:
-
-```
-backgrounds:  [A]
-frames:       [1] [2] [3]
-icons:        [X] [Y] [Z]
-
-Output (zip):
-[A][1][X]
-[A][2][Y]
-[A][3][Z]
+**Per-axis multiplier** — multiply width and height by different factors:
+```jsonc
+{ "scale": [2.0, 1.5] }
 ```
 
-- If a layer has a number of images that is not 1 or the same as the longest layer, an error is raised.
-- **Tip:** Zip mode is best used when you define image paths as a list for each layer, so you have full control over which images are combined together in each output.
-
-For example, with lists:
-
-```
-backgrounds:  [A] [B] [C]
-frames:       [1] [2] [3]
-icons:        [X] [Y] [Z]
-
-Output (zip):
-[A][1][X]
-[B][2][Y]
-[C][3][Z]
+**Exact dimensions** — set absolute pixel size:
+```jsonc
+{ "scale": { "width": 32, "height": 32 } }
 ```
 
-**Example zip mode config:**
+If `scale` is omitted, the image is used at its original size.
+
+### Resample
+
+The filter used when resizing. Only relevant when `scale` is set.
+
+| Value | Description |
+|---|---|
+| `nearest` | Nearest-neighbour. Preserves hard pixel edges. Best for pixel art. (default) |
+| `bilinear` | Linear interpolation. Smooth, fast. |
+| `bicubic` | Cubic interpolation. Smoother than bilinear, slower. |
+| `lanczos` | High-quality downsampling filter. |
+| `box` | Box filter. Good for downscaling. |
+| `hamming` | Similar to box but with less aliasing. |
+
+---
+
+## Recipe variables
+
+When a layer path is a recipe variable placeholder, it is resolved to a list of texture paths — one per recipe of that type — at startup. This lets you drive image generation directly from your pack's recipe files.
+
+All variables follow the format `{type_slotname}`.
+
+### Shaped recipes (`minecraft:recipe_shaped`)
+
+| Variable | Description |
+|---|---|
+| `{shaped_slot_0}` … `{shaped_slot_8}` | Ingredient texture at grid position 0–8 (row-major, left-to-right, top-to-bottom) |
+| `{shaped_result}` | Result item texture |
+
+Sub-3×3 patterns are automatically centred in the grid. For example, a 1×2 vertical pattern is placed in the centre column, slots 1 and 4.
+
+### Shapeless recipes (`minecraft:recipe_shapeless`)
+
+| Variable | Description |
+|---|---|
+| `{shapeless_slot_0}` … `{shapeless_slot_8}` | Ingredients in declaration order, expanded by count |
+| `{shapeless_result}` | Result item texture |
+
+Ingredients with `"count": N` are expanded into N consecutive slots. Unused slots beyond the ingredient count resolve to `None` (blank).
+
+### Furnace recipes (`minecraft:recipe_furnace`)
+
+| Variable | Description |
+|---|---|
+| `{furnace_slot_0}` | Input item texture |
+| `{furnace_slot_1}` | Output item texture |
+
+This covers all furnace-tag variants (`furnace`, `smoker`, `campfire`, `soul_campfire`) — the recipe file determines which stations accept it, not the variable.
+
+---
+
+## texture_map.json
+
+This file contains manual texture path overrides. It is a flat JSON object mapping item identifiers (or tag names) to texture file paths:
 
 ```jsonc
 {
-  "output_folder": "RP/textures/output/",
-  "output_template": "icon_{index}_{layer1}_{layer2}.png",
-  "combination_mode": "zip",
-  "layers": [
-    { "path": "RP/textures/background.png" }, // 1 image, will be repeated
-    { "path": "RP/textures/frames" }, // 3 images
-    { "path": "RP/textures/icons" } // 3 images
-  ]
+  "minecraft:oak_planks": "RP/textures/blocks/planks_oak.png",
+  "some_tag_name": "RP/textures/items/tag_icon.png"
 }
 ```
 
-## How It Works
+Use this for:
 
-- The script computes all possible combinations of the provided layers (cartesian product).
-- For each combination, it overlays the images in order, using anchor, scaling, and offset for placement.
-- Image generation is parallelized using multithreading for speed.
-- The output filename is generated from the template and saved in the output folder.
+- **Vanilla items** — items that exist in the vanilla behavior pack but whose textures are not in your RP
+- **Tags** — recipe key entries that use `"tag"` instead of `"item"` cannot be resolved automatically; they always require an entry here
+- **Any item** — you can override any item's texture here regardless of what the RP contains
 
-## Slot Variables: Dynamic Layer Paths for Recipes
+### Texture resolution order
 
-When creating recipe images, you can use curly-brace `{}` variables in your config to dynamically reference recipe slots and results. These variables are replaced at runtime with the correct image path for each recipe.
+For every item identifier encountered in a recipe, the tool resolves it in this order:
 
-**How do slot variables work?**
+1. Check `texture_map.json` for a manual override → use it if found
+2. Look up the item in the behavior pack via reticulator → follow `minecraft:icon` → look up in `item_texture.json` → return the path
+3. If the item is not found anywhere → **error**, the program stops
 
-- For each recipe, the script extracts the item in each slot and the result, and builds a list of textures for each slot variable.
-- For example, `{shaped_slot_0}` will resolve to a list of textures: one for each recipe, showing the item in slot 0 (or blank if the slot is empty for that recipe).
-- `{shaped_result}` will resolve to a list of result item textures, one for each recipe.
-- This means that when you use a slot variable in a layer, the script will generate one output image per recipe, overlaying the correct item (or blank) for each slot.
-
-**Supported slot variables:**
-
-- `{shaped_result}`: The output item of the recipe.
-- `{shaped_slot_0}` to `{shaped_slot_8}`: The input slots for shaped recipes (left-to-right, top-to-bottom).
-
-Example usage in a layer config:
-
-```jsonc
-{
-  "path": "{shaped_slot_5}",
-  "anchor": "top_left",
-  "offset": [5, 0],
-  "scale": { "width": 32, "height": 32 }
-}
-```
-
-If a slot is empty for a recipe, the variable will resolve to `None` and the layer will be treated as blank. This ensures that the output image accurately reflects the recipe layout, including empty slots.
+Tags skip step 2 entirely since they have no item definition. If a tag has no entry in `texture_map.json` the program stops with an error.
 
 ---
 
-## Creating Recipe Images with Slot Variables
+## Errors
 
-To generate recipe images that show the correct items in each slot, follow these steps:
+**`TextureResolutionError`**
+An item or tag referenced in a recipe could not be resolved to a texture. The error message will name the item/tag and tell you to add it to `texture_map.json`.
 
-1. **Use slot variables in your config:**
+**`FileNotFoundError`**
+A layer `path` points to a file or directory that does not exist.
 
-   - Reference `{shaped_slot_0}` to `{shaped_slot_8}` for input slots, and `{shaped_result}` for the output item.
-   - Example:
-     ```jsonc
-     {
-       "path": "{shaped_slot_0}", "anchor": "top_left", "offset": [x0, y0], "scale": {"width": 32, "height": 32}
-     }
-     {
-       "path": "{shaped_result}", "anchor": "top_left", "offset": [rx, ry], "scale": {"width": 32, "height": 32}
-     }
-     ```
-     Adjust `offset` for each slot to position items correctly in your background.
+**`ValueError`**
+`combination_mode` is not `"cartesian"` or `"zip"`, or a `"zip"` layer has a variant count that is neither 1 nor equal to the longest layer.
 
-2. **Always use `zip` mode:**
-
-   - Set `combination_mode` to `zip` in your config. This ensures each recipe's slots and result are matched by index, so the correct items appear in each output image.
-
-3. **Explicitly define slot sizes:**
-
-   - For all layers containing item pictures, set `scale` as an object with `width` and `height` (e.g., `{ "width": 32, "height": 32 }`).
-   - This guarantees that, even if your item textures are different sizes, they will be resized to fit perfectly into their slots.
-
-4. **Example recipe image config:**
-   ```jsonc
-   {
-     "output_folder": "RP/textures/output/",
-     "output_template": "recipe_{index}_{layer2}.png",
-     "combination_mode": "zip",
-     "layers": [
-       { "path": "RP/textures/vanilla_recipe_background.png" },
-       { "path": "{shaped_slot_0}", "anchor": "top_left", "offset": [5, 5], "scale": { "width": 32, "height": 32 } },
-       { "path": "{shaped_slot_1}", "anchor": "top_left", "offset": [42, 5], "scale": { "width": 32, "height": 32 } },
-       { "path": "{shaped_slot_2}", "anchor": "top_left", "offset": [79, 5], "scale": { "width": 32, "height": 32 } },
-       { "path": "{shaped_result}", "anchor": "top_left", "offset": [120, 5], "scale": { "width": 32, "height": 32 } }
-     ]
-   }
-   ```
-
-**Tips:**
-
-- Adjust `offset` values to match your background layout.
-- You can omit unused slots or set their path to a blank value.
-- The output filename can use `{layerN}` to include the item name in the filename.
+**Large combination warning**
+If a mixer would generate more than 500 images, the tool will print a warning and ask for confirmation before proceeding.
 
 ---
 
+## Example config
 
-## JSON Schema: Autocomplete & Validation
-
-This tool supports JSON Schema for config files, enabling:
-
-- **Autocomplete** for config fields, slot variables, and layer properties in editors like VS Code.
-- **Validation** to catch typos, missing fields, and structural errors before running the script.
-
-### How to Use
-
-1. Make sure your config file includes a `$schema` property at the top:
-
-   ```jsonc
-   {
-     "$schema": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/image_mixer/data/config.schema.json",
-     "image_mixers": [ ... ]
-   }
-   ```
-
-2. Open your config file in VS Code (or any schema-aware editor). You should see autocomplete suggestions and validation errors inline.
-
-3. The schema is available at:
-   - `https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/image_mixer/data/config.schema.json`
-   - Or use a local path if working offline.
-
-### Benefits
-
-- Instantly see available fields, slot variable names, and valid values.
-- Get warnings for missing or invalid properties before running the script.
-- Easier onboarding for new users and contributors.
-
-### Advanced
-
-- You can customize the schema for your own extensions or stricter validation.
-- The schema is updated as new features are added—always use the latest version for best results.
-
----
-## Additional Tips & Notes
-
-### Error Handling
-
-- If your config references a variable that does not exist (e.g., a typo in `{shaped_slot_4}`), the script will print a clear error message and treat the layer as blank for that combination.
-- If a file or directory path does not exist, the script will raise an error and skip that variant.
-
-### Performance
-
-- The script uses multithreading (`ThreadPoolExecutor`) to process images in parallel, which greatly speeds up batch generation.
-- If you are generating a very large number of images (500+), the script will warn you and ask for confirmation before proceeding.
-
-### Supported File Formats
-
-- Only PNG images are supported for compositing. Other formats will be ignored or may cause errors.
-
-### Layer Properties
-
-- Each layer can specify:
-  - `offset`: `[x, y]` pixel offset from the anchor position.
-  - `anchor`: Placement anchor (`center`, `top_left`, etc.).
-  - `blend_mode`: Only `normal` is supported (future versions may add more).
-  - `scale`: Uniform (number), non-uniform (list), or absolute size (object with `width` and `height`).
-  - `resample`: Resampling method for scaling (`NEAREST`, `BILINEAR`, `BICUBIC`, `LANCZOS`, `BOX`, `HAMMING`).
-
-### Advanced Features
-
-- You can use a directory as a layer path to automatically include all PNGs in that folder as variants.
-- You can specify a list of file paths for a layer to control exactly which images are used and their order.
-- Blank layers are supported and will be skipped in compositing.
-
-### Custom Output Filenames
-
-- The `output_template` field lets you customize output filenames using `{index}` (combination number) and `{layerN}` (filename stem for each layer).
-- If a placeholder in the template does not match any layer, it will be skipped and a warning will be printed.
-
----
-
-## Screenshots & Examples
-
-### Example: Input Folder Structure
-
-<img src="https://github.com/user-attachments/assets/c21b9460-e054-4b88-9921-f07738cf9899" alt="1" style="image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; max-width: 600px;" />
-<img src="https://github.com/user-attachments/assets/f9d6e2ea-0226-4ee8-b129-802dd8d796d0" alt="2" style="image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; max-width: 600px;" />
-
-### Example: Output Images (After Running Script)
-
-<img src="https://github.com/user-attachments/assets/71738963-fc10-4ad4-adab-d437dc59defd" alt="3" style="image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; max-width: 600px;" />
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test with various image combinations
-5. Submit a pull request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
-
----
-
-*Made with ❤️ for Minecraft Bedrock creators*
-
-### 1.2.0 (2025-07-25)
-
-- You can now specify a list of file paths for a layer's `path` in the config, instead of just a directory or single file. This allows for precise control over which images are used and their order.
-- Added a `zip` mode for combination generation. In `zip` mode, the script takes the first image from each layer and combines them, then the second image from each layer, and so on. If a layer has only one image, it is reused for every combination. In contrast, the default `cartesian` mode creates every possible combination of images from all layers (for example, if you have 2 backgrounds, 3 frames, and 3 icons, you get 2 × 3 × 3 = 18 images, covering every possible mix). Zip mode was added in anticipation of future support for automatically generating data from recipes, making it easier to create comprehensive recipe images.
-- Improved code readability, refactored the codebase, and updated the documentation for clarity and maintainability.
-  > **Note:** The original images used for generating composites are never deleted or moved by this script. If you do not want the source images to appear in your final RP (resource pack), simply place them outside your RP folder (for example, in a `data/` or `source/` directory). Only the generated output images will be saved to your specified output folder.
+See [config.json](config.md) for a full working example covering shaped, shapeless, and furnace recipe image generation.

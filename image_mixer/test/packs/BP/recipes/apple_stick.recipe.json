@@ -1,0 +1,21 @@
+{
+  "format_version": "1.12",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "minecraft:stick"
+    },
+    "pattern": ["FCF", "FF"],
+    "key": {
+      "F": {
+        "item": "minecraft:oak_planks"
+      },
+      "C": {
+        "item": "minecraft:paper"
+      }
+    },
+    "result": {
+      "item": "minecraft:stick"
+    },
+    "tags": ["crafting_table"]
+  }
+}
