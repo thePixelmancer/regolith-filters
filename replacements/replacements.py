@@ -20,6 +20,23 @@ CONFIG = {
 }
 if len(sys.argv) > 1:
     CONFIG.update(json.loads(sys.argv[1]))
+USER_ARGS = sys.argv[2:] if len(sys.argv) > 2 else []
+# ------------------------------------- EXTRA ARGS ------------------------------------- #
+args = iter(USER_ARGS)
+for arg in args:
+    if arg == "--replace":
+        old = next(args, None)
+        new = next(args, None)
+        if old is None or new is None:
+            print('Invalid --replace usage: expected --replace "old" "new"', file=sys.stderr)
+            sys.exit(1)
+        if old.startswith("--") or new.startswith("--"):
+            print(f'Error: --replace "{old}" "{new}" contains an argument-like string.', file=sys.stderr)
+            sys.exit(0)
+        if not CONFIG["replace"]:
+            CONFIG["replace"] = {}
+        CONFIG["replace"][old] = new
+# -------------------------------------------------------------------------------------- #
 
 
 def replace_in_nbt(obj):
@@ -109,7 +126,10 @@ def process_file(file):
     if (
         CONFIG["extension_whitelist"] is None
         or len(CONFIG["extension_whitelist"]) == 0
-        or (isinstance(CONFIG["extension_whitelist"], list) and file.suffix in CONFIG["extension_whitelist"])
+        or (
+            isinstance(CONFIG["extension_whitelist"], list)
+            and file.suffix in CONFIG["extension_whitelist"]
+        )
     ):
         if CONFIG["replace_in_nbt"] and file.suffix == ".mcstructure":
             replace_in_nbt_file(file)
