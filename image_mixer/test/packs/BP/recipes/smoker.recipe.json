@@ -1,0 +1,17 @@
+{
+  "format_version": "1.20.10",
+  "minecraft:recipe_furnace": {
+    "description": {
+      "identifier": "minecraft:smoker_recipe"
+    },
+
+    "unlock": [
+      {
+        "item": "minecraft:apple"
+      }
+    ],
+    "tags": ["smoker"],
+    "input": "minecraft:apple",
+    "output": "minecraft:stick"
+  }
+}

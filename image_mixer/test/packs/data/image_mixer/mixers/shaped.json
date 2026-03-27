@@ -1,0 +1,43 @@
+{
+  "output_folder": "RP/textures/output/shaped/",
+  "output_template": "{recipe_id}.png",
+  "combination_mode": "zip",
+  "slot_template": "RP/textures/shaped_slots.png",
+  "layers": [
+    {
+      "path": "RP/textures/vanilla_recipe_background.png",
+      "blend_mode": "normal",
+      "scale": 2
+    },
+    {
+      "path": "{shaped_slot_0}"
+    },
+    {
+      "path": "{shaped_slot_1}"
+    },
+    {
+      "path": "{shaped_slot_2}"
+    },
+    {
+      "path": "{shaped_slot_3}"
+    },
+    {
+      "path": "{shaped_slot_4}"
+    },
+    {
+      "path": "{shaped_slot_5}"
+    },
+    {
+      "path": "{shaped_slot_6}"
+    },
+    {
+      "path": "{shaped_slot_7}"
+    },
+    {
+      "path": "{shaped_slot_8}"
+    },
+    {
+      "path": "{shaped_result}"
+    }
+  ]
+}
