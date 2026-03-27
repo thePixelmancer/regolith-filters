@@ -6,32 +6,61 @@ import concurrent.futures
 from pathlib import Path
 
 from PIL import Image
+
+import image_cache
 import recipe_image_gen as rig
+from slot_template import read_slot_template
 
 # -------------------------------------------------------------------------------------- #
 SCHEMA_URL = "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/image_mixer/data/config.schema.json"
 
-try:
-    RECIPE_DATA = rig.get_flattened_recipe_data()
-except rig.TextureResolutionError as e:
-    raise SystemExit(f"[ERROR] Failed to resolve recipe textures:\n  {e}") from None
-
-VARIABLE_MAP: dict[str, list] = {
-    # Shaped recipe (9 slots + result)
-    "{shaped_result}": RECIPE_DATA["shaped"]["result"],
-    **{f"{{shaped_slot_{i}}}": RECIPE_DATA["shaped"]["slots"][i] for i in range(9)},
-    # Shapeless recipe (9 slots + result)
-    "{shapeless_result}": RECIPE_DATA["shapeless"]["result"],
-    **{
-        f"{{shapeless_slot_{i}}}": RECIPE_DATA["shapeless"]["slots"][i]
-        for i in range(9)
-    },
-    # Furnace recipe (slot 0 = input, slot 1 = output)
-    "{furnace_slot_0}": RECIPE_DATA["furnace"]["slots"][0],
-    "{furnace_slot_1}": RECIPE_DATA["furnace"]["slots"][1],
-}
-
 BLANK_VALUES = {None, "none", "None", ""}
+
+
+def _build_variable_map(
+    id_whitelist: list[str] | None,
+    tag_whitelist: list[str] | None,
+) -> dict[str, list]:
+    """
+    Build the recipe variable map for a single mixer, applying any whitelists.
+
+    Called once per mixer so that different mixers can filter different recipe subsets.
+    Raises SystemExit with a clear message if any recipe item cannot be resolved.
+    """
+    try:
+        recipe_data = rig.get_flattened_recipe_data(
+            id_whitelist=id_whitelist,
+            tag_whitelist=tag_whitelist,
+        )
+    except rig.TextureResolutionError as e:
+        raise SystemExit(f"[ERROR] Failed to resolve recipe textures:\n  {e}") from None
+
+    # {recipe_id} is a special variable that resolves to the recipe identifier.
+    # Since shaped, shapeless, and furnace recipes are all zipped in parallel by index,
+    # we merge all their id lists into one. The user is expected to use a whitelist to
+    # ensure only one recipe type is active per mixer, so only one list will be non-empty.
+    all_ids = (
+        recipe_data["shaped"]["ids"]
+        or recipe_data["shapeless"]["ids"]
+        or recipe_data["furnace"]["ids"]
+    )
+
+    return {
+        # Recipe identifier (shared across all types — one type active per mixer)
+        "{recipe_id}": all_ids,
+        # Shaped recipe (9 slots + result)
+        "{shaped_result}": recipe_data["shaped"]["result"],
+        **{f"{{shaped_slot_{i}}}": recipe_data["shaped"]["slots"][i] for i in range(9)},
+        # Shapeless recipe (9 slots + result)
+        "{shapeless_result}": recipe_data["shapeless"]["result"],
+        **{
+            f"{{shapeless_slot_{i}}}": recipe_data["shapeless"]["slots"][i]
+            for i in range(9)
+        },
+        # Furnace recipe (slot 0 = input, slot 1 = output)
+        "{furnace_slot_0}": recipe_data["furnace"]["slots"][0],
+        "{furnace_slot_1}": recipe_data["furnace"]["slots"][1],
+    }
 
 
 # -------------------------------------------------------------------------------------- #
@@ -49,13 +78,24 @@ def zip_combinations(all_layers: list[list[dict]]) -> list[tuple[dict, ...]]:
     Return combinations by matching layer variants by index, broadcasting
     single-variant layers to match the longest layer's length.
 
+    Returns an empty list if any variable layer has 0 variants — this happens
+    when a whitelist filters out all recipes of a given type, and is not an error.
+
     Raises:
-        ValueError: If a layer length is not 1 and not equal to the longest layer length.
+        ValueError: If a layer length is not 1, not 0, and not equal to the longest layer length.
     """
     max_len = max(len(layer) for layer in all_layers)
+
+    if max_len == 0:
+        return []
+
     broadcast = []
     for layer in all_layers:
-        if len(layer) == 1:
+        if len(layer) == 0:
+            # A variable layer with no variants means the whitelist matched nothing.
+            # Return early — there is nothing to generate for this mixer.
+            return []
+        elif len(layer) == 1:
             broadcast.append(layer * max_len)
         elif len(layer) == max_len:
             broadcast.append(layer)
@@ -87,16 +127,16 @@ def _is_variable(value: object) -> bool:
     )
 
 
-def _resolve_variable(placeholder: str) -> list:
+def _resolve_variable(placeholder: str, variable_map: dict[str, list]) -> list:
     """Resolve a placeholder string to its recipe data list."""
-    if placeholder not in VARIABLE_MAP:
+    if placeholder not in variable_map:
         raise KeyError(
-            f"Variable '{placeholder}' not found. Available: {list(VARIABLE_MAP.keys())}"
+            f"Variable '{placeholder}' not found. Available: {list(variable_map.keys())}"
         )
-    return VARIABLE_MAP[placeholder]
+    return variable_map[placeholder]
 
 
-def get_layer_variants(layer: dict) -> list[dict]:
+def get_layer_variants(layer: dict, variable_map: dict[str, list]) -> list[dict]:
     """
     Resolve a layer config into a list of variant dicts, one per image.
 
@@ -109,10 +149,12 @@ def get_layer_variants(layer: dict) -> list[dict]:
         "anchor": layer.get("anchor", "center"),
         "scale": layer.get("scale", None),
         "resample": layer.get("resample", None),
+        "slot_bbox": layer.get("slot_bbox", None),
+        "recipe_id": layer.get("recipe_id", None),
     }
 
-    def make_variant(path: Path | None) -> dict:
-        return {**layer_props, "path": path}
+    def make_variant(path: Path | None, recipe_id: str | None = None) -> dict:
+        return {**layer_props, "path": path, "recipe_id": recipe_id}
 
     def resolve_path(p: str) -> Path:
         resolved = Path(p)
@@ -126,8 +168,14 @@ def get_layer_variants(layer: dict) -> list[dict]:
         return [make_variant(None)]
 
     if _is_variable(layer_path):
-        resolved = _resolve_variable(layer_path)
-        return [make_variant(Path(p) if p else None) for p in resolved]
+        resolved = _resolve_variable(layer_path, variable_map)
+        recipe_ids = variable_map.get("{recipe_id}", [])
+        return [
+            make_variant(
+                Path(p) if p else None, recipe_ids[i] if i < len(recipe_ids) else None
+            )
+            for i, p in enumerate(resolved)
+        ]
 
     if isinstance(layer_path, list):
         return [
@@ -150,12 +198,16 @@ def get_layer_variants(layer: dict) -> list[dict]:
     )
 
 
-def expand_layers(layers: list[dict]) -> list[list[dict]]:
-    return [get_layer_variants(layer) for layer in layers]
+def expand_layers(
+    layers: list[dict], variable_map: dict[str, list]
+) -> list[list[dict]]:
+    return [get_layer_variants(layer, variable_map) for layer in layers]
 
 
 def generate_combinations(
-    layers: list[dict], combination_mode: str
+    layers: list[dict],
+    combination_mode: str,
+    variable_map: dict[str, list],
 ) -> list[tuple[dict, ...]]:
     """
     Generate all layer combinations according to the selected mode.
@@ -163,11 +215,9 @@ def generate_combinations(
     Args:
         layers: List of layer config dicts.
         combination_mode: 'cartesian' for all possible combinations, 'zip' to match by index.
-
-    Returns:
-        List of tuples, each a combination of one variant from each layer.
+        variable_map: Resolved recipe variable map for this mixer.
     """
-    all_layers = expand_layers(layers)
+    all_layers = expand_layers(layers, variable_map)
     combinator = (
         zip_combinations if combination_mode == "zip" else cartesian_combinations
     )
@@ -232,63 +282,79 @@ def _format_filename(template: str, idx: int, combination: tuple[dict, ...]) -> 
         f"layer{i}": (Path(layer["path"]).stem if layer["path"] else "none")
         for i, layer in enumerate(combination)
     }
+    # Extract recipe_id from the first layer that has it set (from variable resolution)
+    recipe_id = next(
+        (layer["recipe_id"] for layer in combination if layer.get("recipe_id")),
+        None,
+    )
+    placeholders = {"index": idx, "recipe_id": recipe_id or "unknown", **layer_names}
     try:
-        return template.format(index=idx, **layer_names)
+        return template.format(**placeholders)
     except KeyError as e:
         missing = str(e).strip("'")
         print(f"[WARNING] Template placeholder {{{missing}}} not found. Removing it.")
         cleaned = re.sub(r"\{" + re.escape(missing) + r"\}", "", template)
         try:
-            return cleaned.format(index=idx, **layer_names)
+            return cleaned.format(**placeholders)
         except Exception:
             return f"image_{idx}.png"
 
 
-def composite_layers(combination: tuple[dict, ...]) -> Image.Image | None:
-    """Composite a tuple of layer variants into a single RGBA image."""
-    base_layer = combination[0]
-    if not base_layer["path"]:
-        return None
+def composite_layers(
+    combination: tuple[dict, ...], base_img: Image.Image
+) -> Image.Image:
+    """
+    Composite a tuple of layer variants onto a copy of base_img.
 
-    resample = _get_resample(base_layer.get("resample"))
-    base_img = _scale_image(
-        Image.open(base_layer["path"]).convert("RGBA"),
-        base_layer.get("scale"),
-        resample,
-    )
+    The base image is passed in pre-loaded and pre-scaled so it is not
+    re-opened on every combination. Overlay images are fetched from the
+    image cache to avoid redundant file IO across combinations.
+    """
+    result = base_img.copy()
 
     for layer in combination[1:]:
         if not layer["path"]:
             continue
 
         resample = _get_resample(layer.get("resample"))
-        overlay = _scale_image(
-            Image.open(layer["path"]).convert("RGBA"),
-            layer.get("scale"),
-            resample,
-        )
-        pos = _get_paste_position(
-            layer.get("anchor", "center"),
-            base_img.size,
-            overlay.size,
-            tuple(layer.get("offset", [0, 0])),
-        )
-        temp = Image.new("RGBA", base_img.size, (0, 0, 0, 0))
-        temp.paste(overlay, pos, overlay)
-        base_img = Image.alpha_composite(base_img, temp)
 
-    return base_img
+        # Slot bbox from a template: position and size come directly from the bbox.
+        # Fallback: use the manually specified scale / anchor / offset.
+        if slot_bbox := layer.get("slot_bbox"):
+            x_min, y_min, x_max, y_max = slot_bbox
+            slot_w = x_max - x_min + 1
+            slot_h = y_max - y_min + 1
+            overlay = image_cache.get(layer["path"]).resize(
+                (slot_w, slot_h), resample=resample
+            )
+            pos = (x_min, y_min)
+        else:
+            overlay = _scale_image(
+                image_cache.get(layer["path"]), layer.get("scale"), resample
+            )
+            pos = _get_paste_position(
+                layer.get("anchor", "center"),
+                result.size,
+                overlay.size,
+                tuple(layer.get("offset", [0, 0])),
+            )
+
+        temp = Image.new("RGBA", result.size, (0, 0, 0, 0))
+        temp.paste(overlay, pos, overlay)
+        result = Image.alpha_composite(result, temp)
+
+    return result
 
 
 def process_combination(
-    idx: int, combination: tuple[dict, ...], output_template: str, output_folder: Path
+    idx: int,
+    combination: tuple[dict, ...],
+    base_img: Image.Image,
+    output_template: str,
+    output_folder: Path,
 ) -> None:
     """Composite a layer combination and save the result to disk."""
-    result = composite_layers(combination)
-    if result is None:
-        print(f"[ERROR] Base image missing for combination {idx}.")
-        return
-
+    result = composite_layers(combination, base_img)
     filename = _format_filename(output_template, idx, combination)
     result.save(output_folder / filename)
 
@@ -298,13 +364,19 @@ def process_combination(
 # -------------------------------------------------------------------------------------- #
 
 
-def generate_images(image_mixer: dict) -> None:
+def generate_images(image_mixer: dict, large_batch_threshold: int = 500) -> None:
     """
     Generate and save all composite images for a given image_mixer config.
 
     Args:
-        image_mixer: Config dict with keys: 'output_folder', 'output_template',
-                     'layers', and optionally 'combination_mode' ('cartesian' or 'zip').
+        image_mixer: Config dict with keys:
+            - output_folder (str): Where to write output images.
+            - output_template (str): Filename template. Defaults to 'image_{index}.png'.
+            - combination_mode (str): 'cartesian' or 'zip'. Defaults to 'cartesian'.
+            - layers (list): Layer definitions.
+            - slot_template (str, optional): Path to a slot template PNG.
+        large_batch_threshold: Print a warning if this many images would be generated.
+            Set to 0 to disable. Defaults to 500.
     """
     output_folder = Path(image_mixer["output_folder"])
     output_folder.mkdir(parents=True, exist_ok=True)
@@ -317,21 +389,56 @@ def generate_images(image_mixer: dict) -> None:
             f"Invalid combination_mode '{combination_mode}'. Must be 'cartesian' or 'zip'."
         )
 
-    combinations = generate_combinations(image_mixer["layers"], combination_mode)
+    # Build the variable map for this mixer, filtered by the whitelists.
+    # Done per-mixer so different mixers can target different recipe subsets
+    # (e.g. one mixer for furnace-only, another for smoker-only).
+    recipe_gen = image_mixer.get("recipe_generation", {})
+    id_whitelist = recipe_gen.get("id_whitelist") or None
+    tag_whitelist = recipe_gen.get("tag_whitelist") or None
+    variable_map = _build_variable_map(id_whitelist, tag_whitelist)
+
+    # Read slot template if provided and inject slot_bbox into each layer config.
+    # Layers are matched to slots by their position in the array, skipping layer 0
+    # (the base). Layer 1 → slot 0, layer 2 → slot 1, etc.
+    # The template must be the same pixel dimensions as the scaled output canvas.
+    layers = image_mixer["layers"]
+    if template_path := image_mixer.get("slot_template"):
+        slot_bboxes = read_slot_template(template_path)
+        for layer_index, layer in enumerate(layers[1:], start=0):
+            if layer_index in slot_bboxes:
+                layer["slot_bbox"] = slot_bboxes[layer_index]
+
+    # Load and scale the base image once — shared across all combinations.
+    base_layer_config = layers[0]
+    base_img = _scale_image(
+        image_cache.get(Path(base_layer_config["path"])),
+        base_layer_config.get("scale"),
+        _get_resample(base_layer_config.get("resample")),
+    )
+
+    combinations = generate_combinations(layers, combination_mode, variable_map)
     total = len(combinations)
 
-    if total > 500:
+    if total == 0:
+        print(
+            f"[INFO] Mixer '{output_folder}' produced no combinations — whitelist may have filtered out all recipes."
+        )
+        return
+
+    if large_batch_threshold and total > large_batch_threshold:
         print(
             f"[WARNING] About to generate {total} images. This may heavily load your system."
         )
-        if input("Continue? (Y/N): ").strip().lower() != "y":
-            print("Aborted.")
-            return
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = [
             executor.submit(
-                process_combination, idx, combo, output_template, output_folder
+                process_combination,
+                idx,
+                combo,
+                base_img,
+                output_template,
+                output_folder,
             )
             for idx, combo in enumerate(combinations)
         ]
@@ -340,14 +447,14 @@ def generate_images(image_mixer: dict) -> None:
 
 
 if __name__ == "__main__":
-    config_path = Path("data/image_mixer/config.json")
-    with config_path.open("r") as f:
-        config = json.load(f)
+    mixers_dir = Path("data/image_mixer/mixers")
+    mixer_files = sorted(mixers_dir.glob("*.json"))
 
-    for image_mixer in config["image_mixers"]:
+    if not mixer_files:
+        print(f"[WARNING] No mixer files found in '{mixers_dir}'.")
+
+    for mixer_path in mixer_files:
+        with mixer_path.open("r") as f:
+            image_mixer = json.load(f)
+        print(f"[INFO] Running mixer: {mixer_path.name}")
         generate_images(image_mixer)
-
-    if config.get("$schema") != SCHEMA_URL:
-        warnings.warn(
-            f"\n{'-' * 80}\nSchema not found, get it at:\n\n{SCHEMA_URL}\n{'-' * 80}"
-        )

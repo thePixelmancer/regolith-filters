@@ -1,4 +1,3 @@
-from pathlib import Path
 import json
 from reticulator import Project
 
@@ -9,9 +8,7 @@ with open(TEXTURE_MAP_PATH, "r", encoding="utf-8") as f:
     TEXTURE_MAP: dict[str, str] = json.load(f)
 
 project = Project("BP", "RP")
-vanilla = Project(
-    "data/vanilla_packs/behavior_pack", "data/vanilla_packs/resource_pack"
-)
+vanilla = Project("data/vanilla_packs/behavior_pack", "data/vanilla_packs/resource_pack")
 BP = project.behavior_pack
 RP = project.resource_pack
 
@@ -61,9 +58,7 @@ def get_item_texture_path(item_name: str | None) -> str | None:
     if not texture_data:
         return None
 
-    path = (
-        texture_data[0].get("path") if isinstance(texture_data, list) else texture_data
-    )
+    path = texture_data[0].get("path") if isinstance(texture_data, list) else texture_data
     return f"RP/{path}.png"
 
 
@@ -128,19 +123,32 @@ def flatten_recipe_pattern(pattern: list[str], key: dict) -> list[str | None]:
 
 # -------------------------------------------------------------------------------------- #
 # Per-type slot texture extractors
+#
+# Each handler returns a dict with:
+#   id    (str)        — recipe identifier
+#   tags  (list[str]) — station tags (furnace only; empty list for shaped/shapeless)
+#   slots (list)      — resolved texture paths, one per slot
+#   result (str|None) — result texture (shaped and shapeless only)
 # -------------------------------------------------------------------------------------- #
+
+def _strip_namespace(identifier: str | None) -> str | None:
+    """Extract the part after the colon from a namespaced identifier (e.g., 'minecraft:apple_stew' -> 'apple_stew')."""
+    if not identifier:
+        return None
+    if ":" in identifier:
+        return identifier.split(":", 1)[1]
+    return identifier
 
 
 def get_shaped_slot_textures(recipe_data: dict) -> dict:
     """Return the identifier, per-slot textures, and result texture for a shaped recipe."""
-    identifier = recipe_data.get("description", {}).get("identifier")
+    identifier = _strip_namespace(recipe_data.get("description", {}).get("identifier"))
     result_item = recipe_data.get("result", {}).get("item")
-    slot_entries = flatten_recipe_pattern(
-        recipe_data.get("pattern"), recipe_data.get("key")
-    )
+    slot_entries = flatten_recipe_pattern(recipe_data.get("pattern"), recipe_data.get("key"))
     return {
-        "id": identifier,
-        "slots": [get_slot_texture_path(entry) for entry in slot_entries],
+        "id":     identifier,
+        "tags":   [],
+        "slots":  [get_slot_texture_path(entry) for entry in slot_entries],
         "result": get_item_texture_path(result_item),
     }
 
@@ -153,7 +161,7 @@ def get_shapeless_slot_textures(recipe_data: dict) -> dict:
     are expanded into repeated entries. Unused slots are None.
     Ingredients may specify either 'item' or 'tag'.
     """
-    identifier = recipe_data.get("description", {}).get("identifier")
+    identifier = _strip_namespace(recipe_data.get("description", {}).get("identifier"))
     result_item = recipe_data.get("result", {}).get("item")
     ingredients = recipe_data.get("ingredients", [])
 
@@ -162,36 +170,64 @@ def get_shapeless_slot_textures(recipe_data: dict) -> dict:
         count = ingredient.get("count", 1)
         expanded.extend([ingredient] * count)
 
-    slots = [
-        get_slot_texture_path(expanded[i]) if i < len(expanded) else None
-        for i in range(9)
-    ]
+    slots = [get_slot_texture_path(expanded[i]) if i < len(expanded) else None for i in range(9)]
     return {
-        "id": identifier,
-        "slots": slots,
+        "id":     identifier,
+        "tags":   [],
+        "slots":  slots,
         "result": get_item_texture_path(result_item),
     }
 
 
 def get_furnace_slot_textures(recipe_data: dict) -> dict:
     """
-    Return the identifier and slot textures for a furnace recipe.
+    Return the identifier, station tags, and slot textures for a furnace recipe.
 
     Slot 0 = input, slot 1 = output.
+    Tags reflect which stations accept this recipe (e.g. 'furnace', 'smoker',
+    'campfire', 'soul_campfire') and come from the 'tags' array in the recipe data.
     """
-    identifier = recipe_data.get("description", {}).get("identifier")
+    identifier = _strip_namespace(recipe_data.get("description", {}).get("identifier"))
+    tags = recipe_data.get("tags", [])
     input_item = recipe_data.get("input")
     output_item = recipe_data.get("output")
     return {
-        "id": identifier,
-        "slots": [
-            get_item_texture_path(input_item),
-            get_item_texture_path(output_item),
-        ],
+        "id":    identifier,
+        "tags":  tags,
+        "slots": [get_item_texture_path(input_item), get_item_texture_path(output_item)],
     }
 
 
 # -------------------------------------------------------------------------------------- #
+
+def _passes_whitelist(
+    slot_textures: dict,
+    id_whitelist: list[str] | None,
+    tag_whitelist: list[str] | None,
+) -> bool:
+    """
+    Return True if a recipe should be included given the active whitelists.
+
+    Rules:
+      - If both whitelists are None or empty, all recipes pass.
+      - If either whitelist is non-empty, the recipe must match at least one
+        entry in at least one of the active whitelists.
+      - id_whitelist matches against the recipe identifier.
+      - tag_whitelist matches against the recipe's station tags.
+    """
+    has_id_filter  = bool(id_whitelist)
+    has_tag_filter = bool(tag_whitelist)
+
+    if not has_id_filter and not has_tag_filter:
+        return True
+
+    if has_id_filter and slot_textures["id"] in id_whitelist:
+        return True
+
+    if has_tag_filter and any(tag in tag_whitelist for tag in slot_textures["tags"]):
+        return True
+
+    return False
 
 
 def _append_slots(store: dict, slot_textures: dict, num_slots: int) -> None:
@@ -200,13 +236,24 @@ def _append_slots(store: dict, slot_textures: dict, num_slots: int) -> None:
     for i in range(num_slots):
         store["slots"][i].append(slots[i] if i < len(slots) else None)
 
+    store["ids"].append(slot_textures.get("id"))
+
     if "result" in store:
         store["result"].append(slot_textures.get("result"))
 
 
-def get_flattened_recipe_data() -> dict:
+def get_flattened_recipe_data(
+    id_whitelist: list[str] | None = None,
+    tag_whitelist: list[str] | None = None,
+) -> dict:
     """
     Return all recipe data in a slot-indexed format, separated by recipe type.
+
+    Args:
+        id_whitelist:  If provided, only recipes whose identifier is in this list
+                       are included. Combined with tag_whitelist via OR.
+        tag_whitelist: If provided, only recipes with at least one matching station
+                       tag are included. Combined with id_whitelist via OR.
 
     Structure:
         {
@@ -216,22 +263,24 @@ def get_flattened_recipe_data() -> dict:
         }
     """
     final: dict = {
-        "shaped": {"slots": [[] for _ in range(9)], "result": []},
-        "shapeless": {"slots": [[] for _ in range(9)], "result": []},
-        "furnace": {"slots": [[] for _ in range(2)]},
+        "shaped":    {"ids": [], "slots": [[] for _ in range(9)], "result": []},
+        "shapeless": {"ids": [], "slots": [[] for _ in range(9)], "result": []},
+        "furnace":   {"ids": [], "slots": [[] for _ in range(2)]},
     }
 
     # Maps recipe type key -> (store key, handler, num_slots)
     recipe_handlers = {
-        "minecraft:recipe_shaped": ("shaped", get_shaped_slot_textures, 9),
+        "minecraft:recipe_shaped":    ("shaped",    get_shaped_slot_textures,    9),
         "minecraft:recipe_shapeless": ("shapeless", get_shapeless_slot_textures, 9),
-        "minecraft:recipe_furnace": ("furnace", get_furnace_slot_textures, 2),
+        "minecraft:recipe_furnace":   ("furnace",   get_furnace_slot_textures,   2),
     }
 
     for recipe in BP.recipes:
         for recipe_type, (store_key, handler, num_slots) in recipe_handlers.items():
             if recipe_data := recipe.data.get(recipe_type):
-                _append_slots(final[store_key], handler(recipe_data), num_slots)
+                slot_textures = handler(recipe_data)
+                if _passes_whitelist(slot_textures, id_whitelist, tag_whitelist):
+                    _append_slots(final[store_key], slot_textures, num_slots)
                 break
 
     return final

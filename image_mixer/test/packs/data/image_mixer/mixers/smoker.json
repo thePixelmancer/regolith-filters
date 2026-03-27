@@ -1,0 +1,30 @@
+{
+  "output_folder": "RP/textures/output/smoker/",
+  "output_template": "{recipe_id}.png",
+  "combination_mode": "zip",
+  "recipe_generation": {
+    "tag_whitelist": ["smoker"],
+    "id_whitelist": []
+  },
+  "layers": [
+    {
+      "path": "RP/textures/vanilla_smoker_background.png",
+      "blend_mode": "normal",
+      "scale": 2
+    },
+    {
+      "anchor": "top_left",
+      "path": "{furnace_slot_0}",
+      "offset": [12, 48],
+      "blend_mode": "normal",
+      "scale": { "width": 32, "height": 32 }
+    },
+    {
+      "anchor": "top_left",
+      "path": "{furnace_slot_1}",
+      "offset": [120, 48],
+      "blend_mode": "normal",
+      "scale": { "width": 32, "height": 32 }
+    }
+  ]
+}
