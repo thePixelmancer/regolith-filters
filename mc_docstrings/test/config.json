@@ -1,32 +1,32 @@
 {
-  "formatVersion": "1.7.0",
-  "author": "test",
-  "name": "test",
-  "packs": {
-    "behaviorPack": "./packs/BP",
-    "resourcePack": "./packs/RP"
-  },
-  "regolith": {
-    "dataPath": "./data",
-    "filterDefinitions": {
-      "MCDoc": {
-        "runWith": "deno",
-        "script": "../main.ts"
-      }
-    },
-    "profiles": {
-      "default": {
-        "export": {
-          "build": "standard",
-          "readOnly": false,
-          "target": "local"
-        },
-        "filters": [
-          {
-            "filter": "MCDoc"
-          }
-        ]
-      }
-    }
-  }
+	"author": "test",
+	"formatVersion": "1.7.0",
+	"name": "test",
+	"packs": {
+		"behaviorPack": "./packs/BP",
+		"resourcePack": "./packs/RP"
+	},
+	"regolith": {
+		"dataPath": "./data",
+		"filterDefinitions": {
+			"MCDoc": {
+				"runWith": "deno",
+				"script": "../main.ts"
+			}
+		},
+		"profiles": {
+			"default": {
+				"export": {
+					"build": "standard",
+					"readOnly": false,
+					"target": "local"
+				},
+				"filters": [
+					{
+						"filter": "MCDoc"
+					}
+				]
+			}
+		}
+	}
 }

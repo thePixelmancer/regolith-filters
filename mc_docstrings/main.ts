@@ -1,51 +1,23 @@
-import { AddOn } from "npm:bedrock-kit";
-import { normalizeDoc } from "./parser.ts";
-import { extractFirstJSDoc } from "./extractor.ts";
-import { renderItemMarkdown, renderIndex } from "./renderer.ts";
-import { writeItemDocs, writeIndex } from "./writer.ts";
-
+import { AddOn, Item, Entity, Biome, Block } from "bedrock-kit";
+import { extractJSDocs } from "./extractor.ts";
 // Initialize addon
 const addon = new AddOn("BP", "RP");
 
 // Fetch items from bedrock-kit
-const items = addon.getAllItems();
+const ITEMS = addon.getAllItems();
+const ENTITIES = addon.getAllEntities();
+const BIOMES = addon.getAllBiomes();
+const BLOCKS = addon.getAllBlocks();
 
-const itemsWithDocs = [];
 
-for (const item of items) {
-  const filePath = item.filePath;
+const CONTENT = [ITEMS, ENTITIES, BIOMES, BLOCKS];
 
-  if (!filePath) {
-    console.warn(`No file path for ${item.identifier}`);
-    continue;
+for (const content of CONTENT) {
+  for (const item of content) {
+    if (item instanceof Entity) {
+      console.log(await extractJSDocs(item.behaviorFilePath));
+    } else {
+      console.log(await extractJSDocs(item.filePath));
+    }
   }
-
-  // Extract JSDoc from file
-  const jsdoc = await extractFirstJSDoc(filePath);
-
-  const docData = jsdoc ? normalizeDoc(jsdoc) : {};
-
-  const data = {
-    id: item.identifier,
-    ...docData,
-  };
-
-  itemsWithDocs.push({
-    ...data,
-    content: renderItemMarkdown(data),
-  });
 }
-
-// Write item markdown files
-await writeItemDocs(itemsWithDocs);
-
-// Load template
-const template = await Deno.readTextFile("data/templates/index.md");
-
-// Generate index
-const indexContent = renderIndex(itemsWithDocs, template);
-
-// Write index file
-await writeIndex(indexContent);
-
-console.log(`Generated ${itemsWithDocs.length} item docs`);

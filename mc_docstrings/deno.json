@@ -1,6 +1,6 @@
 {
   "imports": {
     "comment-parser": "npm:comment-parser",
-    "bedrock-kit": "npm:bedrock-kit"
+    "bedrock-kit": "npm:bedrock-kit@^1.0.1"
   }
 }
