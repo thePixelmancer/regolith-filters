@@ -1,0 +1,10 @@
+{
+  "description": "Parses docstrings within json files and outputs documentation based on user templates",
+  "filters": [
+      {
+          "runWith": "deno",
+          "script": "./main.ts",
+          "name": "MCDoc"
+      }
+  ]
+}

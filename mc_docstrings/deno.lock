@@ -1,0 +1,21 @@
+{
+  "version": "5",
+  "specifiers": {
+    "npm:bedrock-kit@*": "1.0.0",
+    "npm:comment-parser@*": "1.4.5"
+  },
+  "npm": {
+    "bedrock-kit@1.0.0": {
+      "integrity": "sha512-qez/fE/tuJafoYpdfsGyM8iSuLFktNsBvVuJqVxb2C+X+eMRspoJ78rtZi9KExSQcoVcLa0k+1ujZUs4n3Ypbw=="
+    },
+    "comment-parser@1.4.5": {
+      "integrity": "sha512-aRDkn3uyIlCFfk5NUA+VdwMmMsh8JGhc4hapfV4yxymHGQ3BVskMQfoXGpCo5IoBuQ9tS5iiVKhCpTcB4pW4qw=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:bedrock-kit@*",
+      "npm:comment-parser@*"
+    ]
+  }
+}

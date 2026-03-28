@@ -1,0 +1,43 @@
+{
+  "format_version": "1.20.80",
+  /**
+   * @description
+   * Explanation about the thing
+   * on multiple lines
+   * @usage
+   * Used as a starter weapon in survival progression.
+   * @notes
+   * Damage is intentionally high to compensate for low durability.
+   *
+   * @warning
+   * Breaks if used with custom enchantments.
+   *
+   *
+   * @dev
+   * Used for testing loot tables, not part of gameplay.
+   *
+   * @group monsters
+   *
+   * @depends
+   * mymod:fire_effect
+   *
+   * @generated
+   */
+  "minecraft:item": {
+    "description": {
+      "identifier": "tsunami_dungeons:guidebook2"
+    },
+    "components": {
+      "minecraft:max_stack_size": 1,
+      "minecraft:stacked_by_data": {
+        "value": false
+      },
+      "minecraft:glint": true,
+      "minecraft:icon": {
+        "textures": {
+          "default": "tsunami_dungeons.guidebook"
+        }
+      }
+    }
+  }
+}
