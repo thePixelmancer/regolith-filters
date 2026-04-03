@@ -1,6 +1,7 @@
-# mc_docstrings
+# Addon-Docs
 
-A [Regolith](https://bedrock-oss.github.io/regolith/) filter that generates Markdown documentation for your Minecraft Bedrock addon. You write templates, it fills them in — one page per item, block, and entity, built from your addon's actual data.
+
+A [Regolith](https://bedrock-oss.github.io/regolith/) filter that generates Markdown documentation for your Minecraft Bedrock addon. You write templates, it fills them in one page per item, block, and entity, etc. All built from your addon's actual data. Rests on the currently exeprimental bedrock-kit API
 
 ---
 
@@ -10,14 +11,14 @@ Add to your Regolith `config.json`:
 
 ```json
 "filterDefinitions": {
-  "mc_docstrings": {
-    "runWith": "deno",
-    "url": "github.com/Pixelmancer-64/regolith-filters/mc_docstrings"
-  }
+    "addon_docs": {
+        "version": "0.0.1",
+        "url": "github.com/thePixelmancer/regolith-filters"
+      },
 },
 "filters": [
   {
-    "filter": "mc_docstrings",
+    "filter": "addon_docs",
     "settings": {
       "outputDir":   "./build/docs",
       "templateDir": "./data/template"
