@@ -1,0 +1,11 @@
+{
+  "tasks": {
+    "check": "deno check index.ts"
+  },
+  "imports": {
+    "bedrock-kit": "npm:bedrock-kit@^0.0.7",
+    "comment-parser": "npm:comment-parser@^1.4.1",
+    "@std/fs": "jsr:@std/fs@^1.0.0",
+    "@std/path": "jsr:@std/path@^1.0.0"
+  }
+}

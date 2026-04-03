@@ -1,0 +1,57 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@std/fs@*": "1.0.19",
+    "jsr:@std/fs@1": "1.0.19",
+    "jsr:@std/internal@^1.0.9": "1.0.12",
+    "jsr:@std/path@*": "1.1.1",
+    "jsr:@std/path@1": "1.1.1",
+    "jsr:@std/path@^1.1.1": "1.1.1",
+    "npm:bedrock-kit@^0.0.4": "0.0.4",
+    "npm:bedrock-kit@^0.0.7": "0.0.7",
+    "npm:comment-parser@^1.4.1": "1.4.5"
+  },
+  "jsr": {
+    "@std/fs@1.0.19": {
+      "integrity": "051968c2b1eae4d2ea9f79a08a3845740ef6af10356aff43d3e2ef11ed09fb06",
+      "dependencies": [
+        "jsr:@std/internal",
+        "jsr:@std/path@^1.1.1"
+      ]
+    },
+    "@std/internal@1.0.12": {
+      "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
+    },
+    "@std/path@1.1.1": {
+      "integrity": "fe00026bd3a7e6a27f73709b83c607798be40e20c81dde655ce34052fd82ec76",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    }
+  },
+  "npm": {
+    "bedrock-kit@0.0.4": {
+      "integrity": "sha512-FhKjzrza7NTQOxxfqWaV3AnoFlh5JmbmuNOzAlrgW9bdWffy5PIR/E447uAsYIZ801aTjSlGE4j/3YBqog7frw==",
+      "dependencies": [
+        "comment-parser"
+      ]
+    },
+    "bedrock-kit@0.0.7": {
+      "integrity": "sha512-CFb4f4wVqhIoEtgdTpSmniV3GVpH82SWJ50yRON+qOqr/YZkaXBE0hgCKmyz3oK3rrD1rCV1WrPsRMrYuywNEw==",
+      "dependencies": [
+        "comment-parser"
+      ]
+    },
+    "comment-parser@1.4.5": {
+      "integrity": "sha512-aRDkn3uyIlCFfk5NUA+VdwMmMsh8JGhc4hapfV4yxymHGQ3BVskMQfoXGpCo5IoBuQ9tS5iiVKhCpTcB4pW4qw=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@std/fs@1",
+      "jsr:@std/path@1",
+      "npm:bedrock-kit@^0.0.7",
+      "npm:comment-parser@^1.4.1"
+    ]
+  }
+}

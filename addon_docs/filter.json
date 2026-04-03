@@ -1,0 +1,10 @@
+{
+  "name": "addon_docs",
+  "description": "Parses docstrings within json files and outputs documentation based on user templates",
+  "filters": [
+    {
+      "runWith": "deno",
+      "script": "./index.ts"
+    }
+  ]
+}
