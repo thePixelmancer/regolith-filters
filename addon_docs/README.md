@@ -1,4 +1,5 @@
-# mc_docstrings
+# Addon-Docs
+
 
 A [Regolith](https://bedrock-oss.github.io/regolith/) filter that generates Markdown documentation for your Minecraft Bedrock addon. You write templates, it fills them in — one page per item, block, and entity, built from your addon's actual data.
 
