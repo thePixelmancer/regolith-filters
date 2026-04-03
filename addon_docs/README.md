@@ -11,14 +11,14 @@ Add to your Regolith `config.json`:
 
 ```json
 "filterDefinitions": {
-  "mc_docstrings": {
+  "addon_docs": {
     "runWith": "deno",
-    "url": "github.com/Pixelmancer-64/regolith-filters/mc_docstrings"
+    "url": "github.com/Pixelmancer-64/regolith-filters/addon_docs"
   }
 },
 "filters": [
   {
-    "filter": "mc_docstrings",
+    "filter": "addon_docs",
     "settings": {
       "outputDir":   "./build/docs",
       "templateDir": "./data/template"
