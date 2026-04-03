@@ -12,7 +12,7 @@ Add to your Regolith `config.json`:
 ```json
 "filterDefinitions": {
     "addon_docs": {
-        "version": "0.0.1",
+        "version": "0.0.2",
         "url": "github.com/thePixelmancer/regolith-filters"
       },
 },
@@ -21,7 +21,7 @@ Add to your Regolith `config.json`:
     "filter": "addon_docs",
     "settings": {
       "outputDir":   "./build/docs",
-      "templateDir": "./data/template"
+      "templateDir": "./data/addon_docs/template"
     }
   }
 ]
