@@ -11,10 +11,10 @@ Add to your Regolith `config.json`:
 
 ```json
 "filterDefinitions": {
-  "addon_docs": {
-    "runWith": "deno",
-    "url": "github.com/thePixelmancer/regolith-filters/addon_docs"
-  }
+    "addon_docs": {
+        "version": "0.0.1",
+        "url": "github.com/thePixelmancer/regolith-filters"
+      },
 },
 "filters": [
   {
