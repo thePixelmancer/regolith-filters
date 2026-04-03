@@ -17,6 +17,7 @@ A curated collection of **custom Regolith filters** for Minecraft Bedrock Editio
 |                                                                     | Link                                    | Short Description                                                                     |
 | ------------------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------- |
 | 🎨                                                                  | [Aseprite Convert](./aseprite_convert/) | Convert Aseprite files into PNGs in multiple modes, including spritesheets and atlas. |
+| 📚                                                                  | [Addon Docs](./addon_docs/)             | Generate Markdown documentation for Minecraft Bedrock addons from templates and data. |
 | 🥚                                                                  | [Auto Spawn Egg](./auto_spawn_egg/)     | Auto-generate spawn egg colors for custom entities based on dominant texture colors.  |
 | 📦                                                                  | [Fetcher](./fetcher/)                   | Download files or folders from GitHub into your Minecraft project.                    |
 | <img src="./image_mixer/images/icon.png" width="100" height="100">  | [Image Mixer](./image_mixer/)           | Batch-generate composite images from layered PNGs with advanced positioning/scaling.  |
@@ -39,6 +40,7 @@ Each filter can be installed individually using Regolith:
 ```bash
 # Install specific filters by folder name
 regolith install aseprite_convert
+regolith install addon_docs
 regolith install auto_spawn_egg
 regolith install fetcher
 regolith install image_mixer
@@ -81,6 +83,7 @@ Add filters to your Regolith profile in `config.json`:
 
 ### Filter-Specific Requirements
 
+- **Addon Docs**: [Deno](https://deno.com/)
 - **Aseprite Convert**: [Aseprite](https://aseprite.org/) software
 - **Auto Spawn Egg**: `colorthief` Python library
 - **Image Mixer**: `Pillow` (PIL) Python library
