@@ -13,7 +13,7 @@ Add to your Regolith `config.json`:
 "filterDefinitions": {
   "addon_docs": {
     "runWith": "deno",
-    "url": "github.com/Pixelmancer-64/regolith-filters/addon_docs"
+    "url": "github.com/thePixelmancer/regolith-filters/addon_docs"
   }
 },
 "filters": [
