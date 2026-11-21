@@ -1,6 +1,6 @@
 {
 	"description": "A filter that makes image combinations based on a configuration file.",
-	"exportData": false,
+	"exportData": true,
 	"filters": [
 		{
 			"runWith": "python",
