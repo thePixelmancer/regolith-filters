@@ -8,21 +8,22 @@
       "items": {
         "anyOf": [
           {
-            "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/0967f0790f9846407585b1a518e33cdf3c30219c/behavior/features/features.json"
+            "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/refs/heads/main/behavior/features/features.jsonhttps://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/refs/heads/main/behavior/features/features.json"
           },
           {
-            "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/0967f0790f9846407585b1a518e33cdf3c30219c/behavior/feature_rules/feature_rules.json"
+            "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/refs/heads/main/behavior/feature_rules/feature_rules.json"
           }
         ]
       }
     },
     {
+      "type": "object",
       "anyOf": [
         {
-          "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/0967f0790f9846407585b1a518e33cdf3c30219c/behavior/features/features.json"
+          "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/refs/heads/main/behavior/features/features.jsonhttps://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/refs/heads/main/behavior/features/features.json"
         },
         {
-          "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/0967f0790f9846407585b1a518e33cdf3c30219c/behavior/feature_rules/feature_rules.json"
+          "$ref": "https://raw.githubusercontent.com/Blockception/Minecraft-bedrock-json-schemas/refs/heads/main/behavior/feature_rules/feature_rules.json"
         }
       ]
     }

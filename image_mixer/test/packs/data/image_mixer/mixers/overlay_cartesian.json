@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/image_mixer/data/config.schema.json",
+  "output_folder": "RP/textures/output/overlay_cartesian/",
+  "output_template": "{layer1}_{layer2}.png",
+  "combination_mode": "cartesian",
+  "layers": [
+    {
+      "path": "RP/textures/background.png",
+      "scale": 4
+    },
+    {
+      "path": "RP/textures/frames/",
+      "scale": 4
+    },
+    {
+      "path": "RP/textures/icons/",
+      "anchor": "center",
+      "scale": 8
+    }
+  ]
+}

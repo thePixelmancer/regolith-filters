@@ -1,0 +1,232 @@
+[
+  {
+    "format_version": "1.21.90",
+    "minecraft:feature_rules": {
+      "description": {
+        "identifier": "@namespace:@namespace_decoration.feature_rule",
+        "places_feature": "@namespace:@namespace_decoration.feature"
+      },
+      "conditions": {
+        "placement_pass": "before_surface_pass",
+        "minecraft:biome_filter": [
+          {
+            "all_of": [
+              {
+                "test": "has_biome_tag",
+                "operator": "==",
+                "value": "ocean"
+              }
+            ]
+          }
+        ]
+      },
+      "distribution": {
+        "scatter_chance": 100,
+        "iterations": 0,
+        "x": {
+          "distribution": "uniform",
+          "extent": [0, 15]
+        },
+        "y": 0,
+        "z": {
+          "distribution": "uniform",
+          "extent": [0, 15]
+        }
+      }
+    }
+  },
+  {
+    "format_version": "1.21.90",
+    "minecraft:scatter_feature": {
+      "description": {
+        "identifier": "@namespace:@namespace_decoration.feature"
+      },
+      "places_feature": "@namespace:@namespace_decoration_random.feature",
+      "distribution": {
+        "iterations": 15,
+        "coordinate_eval_order": "xyz",
+        "x": {
+          "distribution": "uniform",
+          "extent": [0, 15]
+        },
+        "y": 0,
+        "z": {
+          "distribution": "uniform",
+          "extent": [0, 15]
+        }
+      }
+    }
+  },
+  {
+    "format_version": "1.21.90",
+    "minecraft:weighted_random_feature": {
+      "description": {
+        "identifier": "@namespace:@namespace_decoration_random.feature"
+      },
+      "features": [
+        ["@namespace:@namespace_tree.feature", 400],
+        ["@namespace:@namespace_short_grass.feature", 600],
+        ["@namespace:@namespace_poi.feature", 1]
+      ]
+    }
+  },
+  {
+    "format_version": "1.21.90",
+    "minecraft:weighted_random_feature": {
+      "description": {
+        "identifier": "@namespace:@namespace_poi.feature"
+      },
+      "features": [
+        ["@namespace:@namespace_altar.feature", 1],
+        ["@namespace:@namespace_grave.feature", 1],
+        ["@namespace:@namespace_campfire.feature", 1],
+        ["@namespace:@namespace_lamp.feature", 3],
+        ["@namespace:@namespace_brazier.feature", 1]
+      ]
+    }
+  },
+  /* ------------------------------------------------------------------------------------ */
+  {
+    "format_version": "1.21.90",
+    "minecraft:tree_feature": {
+      "description": {
+        "identifier": "@namespace:@namespace_tree.feature"
+      },
+      // Blocks the tree can be placed on.
+      "may_grow_on": ["minecraft:grass_block", "minecraft:air"],
+      // Any "may_grow_on" block that is not specified here will be replaced with the first block in this list.
+      "base_block": ["minecraft:grass_block"],
+      // Blocks to ignore when checking for clearance around the tree. Already includes all blocks specified in "may_replace".
+      "may_grow_through": [
+        { "tags": "query.any_tag('dirt')" },
+        "minecraft:grass_block",
+        "minecraft:tall_grass",
+        "minecraft:air"
+      ],
+      // Blocks that can be replaced by the tree's trunk and canopy.
+      "may_replace": ["minecraft:air", "minecraft:grass_block"],
+
+      "trunk": {
+        "trunk_decoration": {
+          "num_steps": 0,
+          "step_direction": "out",
+          "decoration_chance": { "numerator": 1, "denominator": 100 },
+          "decoration_block": {
+            "name": "@namespace:page",
+            "states": { "@namespace:page": 0 }
+          }
+        },
+        "trunk_height": {
+          "height_modifier": [1],
+          "range_min": 12,
+          "range_max": 17
+        },
+        "trunk_block": {
+          "name": "minecraft:spruce_log"
+        }
+      },
+      "spruce_canopy": {
+        "lower_offset": 8,
+        "upper_offset": 10,
+        "leaf_block": "minecraft:spruce_leaves",
+        "max_radius": 2
+      }
+    }
+  },
+  {
+    "format_version": "1.26.60",
+    "minecraft:single_block_feature": {
+      "description": { "identifier": "@namespace:@namespace_short_grass.feature" },
+      "places_block": "minecraft:short_grass",
+      "enforce_placement_rules": false,
+      "enforce_survivability_rules": false,
+      "may_replace": ["minecraft:air"]
+    }
+  },
+  /* ------------------------------------------------------------------------------------ */ {
+    "format_version": "1.26.60",
+    "minecraft:single_block_feature": {
+      "description": { "identifier": "@namespace:@namespace_campfire.feature" },
+      "places_block": "minecraft:campfire",
+      "enforce_placement_rules": false,
+      "enforce_survivability_rules": false,
+      "may_replace": ["minecraft:air"]
+    }
+  },
+  {
+    "format_version": "1.26.60",
+    "minecraft:structure_template_feature": {
+      "description": { "identifier": "@namespace:@namespace_altar.feature" },
+      "adjustment_radius": 4,
+      "facing_direction": "random",
+      "rotate_around_center": true,
+      // "ground_level": 0,
+      "structure_name": "@namespace:altar",
+      "constraints": {
+        "grounded": {},
+        "unburied": {},
+        "block_intersection": { "block_allowlist": ["minecraft:air", "minecraft:grass_block", "minecraft:dirt"] }
+      }
+    }
+  },
+  {
+    "format_version": "1.26.60",
+    "minecraft:structure_template_feature": {
+      "description": { "identifier": "@namespace:@namespace_well.feature" },
+      "adjustment_radius": 5,
+      "ground_level": 31,
+      "structure_name": "@namespace:well",
+      "constraints": {
+        "grounded": {},
+        "unburied": {},
+        "block_intersection": { "block_allowlist": ["minecraft:air", "minecraft:grass_block", "minecraft:dirt"] }
+      }
+    }
+  },
+  {
+    "format_version": "1.26.60",
+    "minecraft:structure_template_feature": {
+      "description": { "identifier": "@namespace:@namespace_brazier.feature" },
+      "adjustment_radius": 4,
+      // "ground_level": 0,
+      "structure_name": "@namespace:brazier",
+      "constraints": {
+        "grounded": {},
+        "unburied": {},
+        "block_intersection": { "block_allowlist": ["minecraft:air", "minecraft:grass_block", "minecraft:dirt"] }
+      }
+    }
+  },
+  {
+    "format_version": "1.26.60",
+    "minecraft:structure_template_feature": {
+      "description": { "identifier": "@namespace:@namespace_lamp.feature" },
+      "adjustment_radius": 4,
+      "facing_direction": "random",
+      "rotate_around_center": true,
+      // "ground_level": 0,
+      "structure_name": "@namespace:lamp",
+      "constraints": {
+        "grounded": {},
+        "unburied": {},
+        "block_intersection": { "block_allowlist": ["minecraft:air", "minecraft:grass_block", "minecraft:dirt"] }
+      }
+    }
+  },
+  {
+    "format_version": "1.26.60",
+    "minecraft:structure_template_feature": {
+      "description": { "identifier": "@namespace:@namespace_grave.feature" },
+      "adjustment_radius": 4,
+      "facing_direction": "random",
+      "rotate_around_center": true,
+      "ground_level": 3,
+      "structure_name": "@namespace:grave",
+      "constraints": {
+        "grounded": {},
+        "unburied": {},
+        "block_intersection": { "block_allowlist": ["minecraft:air", "minecraft:grass_block", "minecraft:dirt"] }
+      }
+    }
+  }
+]

@@ -6,7 +6,7 @@ Image Mixer is a tool for compositing multiple image layers into a set of output
 
 ## How it works
 
-You define one or more **image mixers** in `data/image_mixer/config.json`. Each mixer describes a stack of image layers and how they should be combined. The tool resolves each layer to one or more image files, generates every combination, composites them in order, and saves the results.
+You define one or more **image mixers**, each in its own JSON file under `data/image_mixer/mixers/`. Each mixer describes a stack of image layers and how they should be combined. The tool resolves each layer to one or more image files, generates every combination, composites them in order, and saves the results. Mixer files are run in alphabetical order.
 
 ---
 
@@ -15,7 +15,9 @@ You define one or more **image mixers** in `data/image_mixer/config.json`. Each 
 ```
 data/
   image_mixer/
-    config.json          ← your mixer definitions
+    mixers/
+      shaped.json        ← one file per mixer
+      furnace.json
     texture_map.json     ← manual texture path overrides
 BP/                      ← your behavior pack
 RP/                      ← your resource pack
@@ -23,14 +25,15 @@ RP/                      ← your resource pack
 
 ---
 
-## config.json
+## Mixer files
 
-The top-level structure is:
+Each `*.json` file in `data/image_mixer/mixers/` is a single mixer object:
 
 ```jsonc
 {
   "$schema": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/image_mixer/data/config.schema.json",
-  "image_mixers": [ /* one or more mixer definitions */ ]
+  "output_folder": "RP/textures/output/",
+  "layers": [ /* ... */ ]
 }
 ```
 
@@ -38,13 +41,13 @@ Including the `$schema` field is recommended — it enables autocomplete and val
 
 ### Mixer definition
 
-Each entry in `image_mixers` is a mixer object:
-
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `output_folder` | string | yes | Folder to write output images into. Created if it doesn't exist. |
 | `output_template` | string | no | Filename template for output images. Defaults to `image_{index}.png`. |
 | `combination_mode` | string | no | How layers are combined. `"cartesian"` (default) or `"zip"`. |
+| `slot_template` | string | no | Path to a slot template PNG. See [Slot templates](#slot-templates). |
+| `recipe_generation` | object | no | Whitelists that restrict which recipes feed the recipe variables. See [Recipe whitelists](#recipe-whitelists). |
 | `layers` | array | yes | Ordered list of layer definitions. |
 
 ### output_template
@@ -54,13 +57,14 @@ The template is a Python format string. Available placeholders:
 | Placeholder | Value |
 |---|---|
 | `{index}` | Zero-based index of this combination |
+| `{recipe_id}` | Identifier of the recipe (namespace removed) behind the recipe variables used in this mixer; `"unknown"` if none are used |
 | `{layer0}` | Filename stem of the first layer's resolved image |
 | `{layer1}` | Filename stem of the second layer's resolved image |
 | `{layerN}` | ...and so on for each layer |
 
 Example: `"{index}_{layer1}_icon.png"` → `0_void_crystal_icon.png`
 
-If a placeholder references a layer whose path resolved to nothing (a blank slot), its value will be `"none"`.
+If a placeholder references a layer whose path resolved to nothing (a blank slot), its value will be `"none"`. Two combinations that format to the same filename overwrite each other, so include `{index}` if recipe ids may repeat.
 
 ### combination_mode
 
@@ -169,6 +173,31 @@ The filter used when resizing. Only relevant when `scale` is set.
 
 ---
 
+## Slot templates
+
+Instead of giving every slot layer an `anchor`/`offset`/`scale`, a mixer can set `slot_template` to a PNG with the same pixel size as the (scaled) base image. Coloured rectangles mark where each layer goes:
+
+- The **red channel** value selects the slot: `10`, `20`, `30` … `100` map to slots 0–9 (values within ±4 are accepted). If a slot's value is not found in red, green then blue are checked.
+- Slot 0 is the **second** layer (the base layer is not a slot), slot 1 the third layer, and so on.
+- Each mapped layer is stretched to the rectangle's bounding box. Its own `anchor`, `offset` and `scale` are ignored; `resample` still applies.
+
+Slots missing from the template print a warning and fall back to the layer's own `anchor`/`offset`/`scale`.
+
+## Recipe whitelists
+
+By default recipe variables cover every recipe of their type. `recipe_generation` narrows that per mixer:
+
+```jsonc
+"recipe_generation": {
+  "id_whitelist": ["void_crystal"],   // recipe identifiers, namespace removed
+  "tag_whitelist": ["smoker"]         // furnace station tags
+}
+```
+
+If both lists are empty or omitted, all recipes are used. Otherwise a recipe is kept when it matches **either** list (`tag_whitelist` only matches furnace recipes). If the whitelists remove every recipe, the mixer logs a message and produces no images.
+
+---
+
 ## Recipe variables
 
 When a layer path is a recipe variable placeholder, it is resolved to a list of texture paths — one per recipe of that type — at startup. This lets you drive image generation directly from your pack's recipe files.
@@ -200,7 +229,9 @@ Ingredients with `"count": N` are expanded into N consecutive slots. Unused slot
 | `{furnace_slot_0}` | Input item texture |
 | `{furnace_slot_1}` | Output item texture |
 
-This covers all furnace-tag variants (`furnace`, `smoker`, `campfire`, `soul_campfire`) — the recipe file determines which stations accept it, not the variable.
+This covers all furnace-tag variants (`furnace`, `smoker`, `campfire`, `soul_campfire`) — the recipe file determines which stations accept it, not the variable. Use `tag_whitelist` to build a separate mixer per station.
+
+Shaped, shapeless, and furnace variables are independent lists: each variable only ever contains recipes of its own type, and `{recipe_id}` in `output_template` follows the type of the variables used in the mixer. Don't mix variables of different recipe types in one `zip` mixer.
 
 ---
 
@@ -245,10 +276,10 @@ A layer `path` points to a file or directory that does not exist.
 `combination_mode` is not `"cartesian"` or `"zip"`, or a `"zip"` layer has a variant count that is neither 1 nor equal to the longest layer.
 
 **Large combination warning**
-If a mixer would generate more than 500 images, the tool will print a warning and ask for confirmation before proceeding.
+If a mixer would generate more than 500 images, the tool prints a warning and continues.
 
 ---
 
-## Example config
+## Example mixers
 
-See [config.json](config.md) for a full working example covering shaped, shapeless, and furnace recipe image generation.
+See [config.md](config.md) for full working examples covering shaped, shapeless, and furnace recipe image generation.

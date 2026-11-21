@@ -35,19 +35,12 @@ def _build_variable_map(
     except rig.TextureResolutionError as e:
         raise SystemExit(f"[ERROR] Failed to resolve recipe textures:\n  {e}") from None
 
-    # {recipe_id} is a special variable that resolves to the recipe identifier.
-    # Since shaped, shapeless, and furnace recipes are all zipped in parallel by index,
-    # we merge all their id lists into one. The user is expected to use a whitelist to
-    # ensure only one recipe type is active per mixer, so only one list will be non-empty.
-    all_ids = (
-        recipe_data["shaped"]["ids"]
-        or recipe_data["shapeless"]["ids"]
-        or recipe_data["furnace"]["ids"]
-    )
-
+    # Per-type recipe id lists. They are not exposed as layer paths; they are looked up
+    # by get_layer_variants so each variant carries the id of the recipe it came from.
     return {
-        # Recipe identifier (shared across all types — one type active per mixer)
-        "{recipe_id}": all_ids,
+        "{shaped_recipe_id}": recipe_data["shaped"]["ids"],
+        "{shapeless_recipe_id}": recipe_data["shapeless"]["ids"],
+        "{furnace_recipe_id}": recipe_data["furnace"]["ids"],
         # Shaped recipe (9 slots + result)
         "{shaped_result}": recipe_data["shaped"]["result"],
         **{f"{{shaped_slot_{i}}}": recipe_data["shaped"]["slots"][i] for i in range(9)},
@@ -169,7 +162,14 @@ def get_layer_variants(layer: dict, variable_map: dict[str, list]) -> list[dict]
 
     if _is_variable(layer_path):
         resolved = _resolve_variable(layer_path, variable_map)
-        recipe_ids = variable_map.get("{recipe_id}", [])
+        # "{shapeless_slot_3}" -> "{shapeless_recipe_id}" so ids always match the recipe type
+        # the variable belongs to, regardless of which other types exist in the packs.
+        recipe_type = re.match(r"\{(shaped|shapeless|furnace)_", layer_path)
+        recipe_ids = (
+            variable_map.get(f"{{{recipe_type.group(1)}_recipe_id}}", [])
+            if recipe_type
+            else []
+        )
         return [
             make_variant(
                 Path(p) if p else None, recipe_ids[i] if i < len(recipe_ids) else None

@@ -1,115 +1,159 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Regolith Image Mixer Config",
-  "description": "Schema for batch image compositing configuration.",
+  "title": "Regolith Image Mixer Mixer File",
+  "description": "Schema for a single mixer file stored in data/image_mixer/mixers/. Each file describes one batch of composited images.",
   "type": "object",
-  "required": ["image_mixers"],
+  "required": ["output_folder", "layers"],
   "properties": {
-    "image_mixers": {
+    "$schema": {
+      "type": "string"
+    },
+    "output_folder": {
+      "type": "string",
+      "description": "Path to the folder generated images are written to. Created if it does not exist."
+    },
+    "output_template": {
+      "type": "string",
+      "default": "image_{index}.png",
+      "description": "Python format string for output filenames. Supports {index}, {recipe_id} (when a recipe variable is used), and {layerN} (filename stem of layer N's resolved image, or 'none' for blank layers)."
+    },
+    "combination_mode": {
+      "type": "string",
+      "enum": ["cartesian", "zip"],
+      "default": "cartesian",
+      "description": "How to combine layer variants: 'cartesian' (every combination) or 'zip' (index-matched; single-variant layers are broadcast)."
+    },
+    "slot_template": {
+      "type": "string",
+      "description": "Path to a slot template PNG, the same size as the scaled base image. Layer 1 maps to slot 0, layer 2 to slot 1, and so on; each mapped layer is stretched to the slot's bounding box and its anchor, offset and scale are ignored. Slots are encoded by R channel values 10, 20, ... 100."
+    },
+    "recipe_generation": {
+      "type": "object",
+      "description": "Filters which recipes feed the recipe variables of this mixer. If both lists are empty, all recipes are used; otherwise a recipe is kept when it matches either list.",
+      "properties": {
+        "id_whitelist": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Recipe identifiers (namespace stripped, e.g. 'void_crystal') to include."
+        },
+        "tag_whitelist": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Furnace station tags (e.g. 'furnace', 'smoker', 'campfire') to include."
+        }
+      },
+      "additionalProperties": false
+    },
+    "layers": {
       "type": "array",
       "minItems": 1,
+      "description": "Ordered layers. The first layer is the base image; the rest are composited on top in order.",
       "items": {
         "type": "object",
-        "required": ["output_folder", "output_template", "combination_mode", "layers"],
+        "required": ["path"],
         "properties": {
-          "output_folder": {
-            "type": "string",
-            "description": "Path to output folder for generated images."
-          },
-          "output_template": {
-            "type": "string",
-            "description": "Template for output filenames, supports {index}, {layerN}, and slot variables."
-          },
-          "combination_mode": {
-            "type": "string",
-            "enum": ["cartesian", "zip"],
-            "default": "cartesian",
-            "description": "How to combine layer variants: 'cartesian' (all combinations) or 'zip' (index-matched)."
-          },
-          "layers": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "object",
-              "required": ["path"],
-              "properties": {
-                "path": {
-                  "description": "Path to image file, directory, list of files, or slot variable (e.g., {shaped_slot_0}).",
-                  "oneOf": [
-                    {
-                      "type": "string",
-                      "examples": [
-                        "RP/textures/",
-                        "{shaped_slot_0}",
-                        "{shaped_slot_1}",
-                        "{shaped_slot_2}",
-                        "{shaped_slot_3}",
-                        "{shaped_slot_4}",
-                        "{shaped_slot_5}",
-                        "{shaped_slot_6}",
-                        "{shaped_slot_7}",
-                        "{shaped_slot_8}",
-                        "{shaped_result}"
-                      ],
-                      "description": "Any string path, including slot variables like {shaped_slot_0}."
-                    },
-                    { "type": "array", "items": { "type": "string" } }
-                  ]
-                },
-                "anchor": {
-                  "type": "string",
-                    "enum": [
-                    "center",
-                    "top_left",
-                    "top_center",
-                    "top_right",
-                    "left_center",
-                    "right_center",
-                    "bottom_left",
-                    "bottom_center",
-                    "bottom_right"
-                    ],
-                  "default": "center",
-                  "description": "Anchor position for overlay placement."
-                },
-                "offset": {
-                  "type": "array",
-                  "items": { "type": "integer" },
-                  "minItems": 2,
-                  "maxItems": 2,
-                  "description": "[x, y] pixel offset from anchor position."
-                },
-                "blend_mode": {
-                  "type": "string",
-                  "enum": ["normal"],
-                  "default": "normal",
-                  "description": "Blend mode for compositing (only 'normal' supported)."
-                },
-                "scale": {
-                  "description": "Scaling for overlay. Number (uniform), array (width, height), or object (absolute size).",
-                  "oneOf": [
-                    { "type": "number" },
-                    { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
-                    { "type": "object", "properties": {
-                      "width": { "type": "integer" },
-                      "height": { "type": "integer" }
-                    }, "required": ["width", "height"] }
-                  ]
-                },
-                "resample": {
-                  "type": "string",
-                  "enum": ["NEAREST", "BILINEAR", "BICUBIC", "LANCZOS", "BOX", "HAMMING"],
-                  "default": "NEAREST",
-                  "description": "Resampling method for scaling."
-                }
+          "path": {
+            "description": "Image file, directory of PNGs, list of files ('none' for blank), 'none' for a skipped layer, or a recipe variable such as {shaped_slot_0}.",
+            "oneOf": [
+              {
+                "type": "string",
+                "examples": [
+                  "RP/textures/",
+                  "none",
+                  "{shaped_slot_0}",
+                  "{shaped_slot_1}",
+                  "{shaped_slot_2}",
+                  "{shaped_slot_3}",
+                  "{shaped_slot_4}",
+                  "{shaped_slot_5}",
+                  "{shaped_slot_6}",
+                  "{shaped_slot_7}",
+                  "{shaped_slot_8}",
+                  "{shaped_result}",
+                  "{shapeless_slot_0}",
+                  "{shapeless_slot_1}",
+                  "{shapeless_slot_2}",
+                  "{shapeless_slot_3}",
+                  "{shapeless_slot_4}",
+                  "{shapeless_slot_5}",
+                  "{shapeless_slot_6}",
+                  "{shapeless_slot_7}",
+                  "{shapeless_slot_8}",
+                  "{shapeless_result}",
+                  "{furnace_slot_0}",
+                  "{furnace_slot_1}"
+                ]
               },
-              "additionalProperties": false
-            }
+              {
+                "type": "array",
+                "items": { "type": ["string", "null"] }
+              },
+              { "type": "null" }
+            ]
+          },
+          "anchor": {
+            "type": "string",
+            "enum": [
+              "center",
+              "top_left",
+              "top_center",
+              "top_right",
+              "left_center",
+              "right_center",
+              "bottom_left",
+              "bottom_center",
+              "bottom_right"
+            ],
+            "default": "center",
+            "description": "Anchor position for overlay placement."
+          },
+          "offset": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "[x, y] pixel offset from the anchor position."
+          },
+          "blend_mode": {
+            "type": "string",
+            "enum": ["normal"],
+            "default": "normal",
+            "description": "Blend mode for compositing (only 'normal' is supported)."
+          },
+          "scale": {
+            "description": "Scaling. Number (uniform), [x, y] multipliers, or an object with absolute pixel width and height.",
+            "oneOf": [
+              { "type": "number", "exclusiveMinimum": 0 },
+              {
+                "type": "array",
+                "items": { "type": "number", "exclusiveMinimum": 0 },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "width": { "type": "integer", "minimum": 1 },
+                  "height": { "type": "integer", "minimum": 1 }
+                },
+                "required": ["width", "height"],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "resample": {
+            "type": "string",
+            "enum": [
+              "NEAREST", "BILINEAR", "BICUBIC", "LANCZOS", "BOX", "HAMMING",
+              "nearest", "bilinear", "bicubic", "lanczos", "box", "hamming"
+            ],
+            "default": "nearest",
+            "description": "Resampling method for scaling (case-insensitive)."
           }
         },
         "additionalProperties": false
       }
     }
   },
-  "additionalProperties": true
+  "additionalProperties": false
 }

@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/image_mixer/data/config.schema.json",
   "output_folder": "RP/textures/output/shaped/",
   "output_template": "{recipe_id}.png",
   "combination_mode": "zip",

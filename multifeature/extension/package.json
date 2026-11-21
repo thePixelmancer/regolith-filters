@@ -1,0 +1,65 @@
+{
+  "name": "multifeature-editor",
+  "displayName": "MultiFeature Editor",
+  "description": "View and edit Minecraft multifeature files as a graph.",
+  "version": "0.1.0",
+  "publisher": "thepixelmancer",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onCustomEditor:multifeature.graph",
+    "onCommand:multifeature.create",
+    "onCommand:multifeature.open"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "multifeature.create",
+        "title": "MultiFeature: Create File"
+      },
+      {
+        "command": "multifeature.open",
+        "title": "MultiFeature: Open Graph Editor",
+        "icon": "$(type-hierarchy)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "multifeature.open",
+          "when": "resourceFilename =~ /\\.multifeature\\.json$/ && activeCustomEditorId != multifeature.graph",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "multifeature.open",
+          "when": "resourceFilename =~ /\\.multifeature\\.json$/",
+          "group": "navigation"
+        }
+      ]
+    },
+    "customEditors": [
+      {
+        "viewType": "multifeature.graph",
+        "displayName": "MultiFeature Graph",
+        "selector": [
+          {
+            "filenamePattern": "*.multifeature.json"
+          }
+        ],
+        "priority": "option"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@humanwhocodes/momoa": "^3.3.13",
+    "json5": "^2.2.3"
+  }
+}

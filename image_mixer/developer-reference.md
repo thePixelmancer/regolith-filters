@@ -10,7 +10,9 @@ The program is split into two modules:
 
 `recipe_image_gen.py` — reads the Minecraft project (behavior pack + resource pack) and resolves all recipe data into flat lists of texture paths, one entry per recipe per slot.
 
-`image_mixer.py` — reads `config.json`, resolves layer configs into lists of image variants, generates combinations of those variants, and composites + saves the output images. It imports `recipe_image_gen` at startup and exposes recipe slot data as config-level variables.
+`image_mixer.py` — reads each mixer file in `data/image_mixer/mixers/`, resolves layer configs into lists of image variants, generates combinations of those variants, and composites + saves the output images. It imports `recipe_image_gen` at startup and builds a per-mixer map of recipe slot variables.
+
+`slot_template.py` — parses a slot template PNG into per-slot bounding boxes, and `image_cache.py` caches loaded images across combinations.
 
 ---
 
@@ -132,14 +134,15 @@ Appends one recipe's resolved data into the slot-indexed store structure. Writes
 ### get_flattened_recipe_data
 
 ```python
-def get_flattened_recipe_data() -> dict
+def get_flattened_recipe_data(id_whitelist=None, tag_whitelist=None) -> dict
 ```
 
-Iterates all recipes in `BP.recipes`, identifies the recipe type, dispatches to the appropriate handler, and accumulates results into:
+Iterates all recipes in `BP.recipes`, identifies the recipe type, dispatches to the appropriate handler, and accumulates results into the structure below. If either whitelist is non-empty, a recipe is kept only if its identifier is in `id_whitelist` or one of its station tags is in `tag_whitelist`.
 
 ```python
 {
     "shaped": {
+        "ids": [recipe_id0, recipe_id1, ...],
         "slots": [
             [slot0_recipe0, slot0_recipe1, ...],  # index 0
             [slot1_recipe0, slot1_recipe1, ...],  # index 1
@@ -148,7 +151,7 @@ Iterates all recipes in `BP.recipes`, identifies the recipe type, dispatches to 
         "result": [result_recipe0, result_recipe1, ...]
     },
     "shapeless": { /* same structure, 9 slots */ },
-    "furnace":   { /* same structure, 2 slots, no result key */ }
+    "furnace":   { /* "ids" + 2 slots, no result key */ }
 }
 ```
 
@@ -174,9 +177,10 @@ Adding support for a new recipe type means adding one entry here and writing a h
 
 | Name | Type | Description |
 |---|---|---|
-| `RECIPE_DATA` | `dict` | Output of `rig.get_flattened_recipe_data()`. Built at import time; raises `SystemExit` on `TextureResolutionError`. |
-| `VARIABLE_MAP` | `dict[str, list]` | Maps variable placeholder strings like `"{shaped_slot_0}"` to their corresponding recipe data lists. |
+| `SCHEMA_URL` | `str` | URL of the mixer JSON schema. |
 | `BLANK_VALUES` | `set` | `{None, "none", "None", ""}` — all values treated as intentionally empty paths. |
+
+The recipe variable map is not global: `_build_variable_map(id_whitelist, tag_whitelist)` builds it once per mixer (so mixers can use different whitelists), mapping placeholders like `"{shaped_slot_0}"` to recipe data lists. It also holds `"{shaped_recipe_id}"`, `"{shapeless_recipe_id}"` and `"{furnace_recipe_id}"` id lists, which `get_layer_variants` uses to tag each variant with its recipe id. Raises `SystemExit` on `TextureResolutionError`.
 
 ---
 
@@ -198,24 +202,24 @@ Both accept a list of layer variant lists and return a list of combinations (tup
 ### Layer variant resolution
 
 ```python
-def get_layer_variants(layer: dict) -> list[dict]
+def get_layer_variants(layer: dict, variable_map: dict[str, list]) -> list[dict]
 ```
 
-Resolves a single layer config dict to a list of variant dicts. Each variant is a copy of the layer's properties (`offset`, `anchor`, `scale`, `resample`, `blend_mode`) with a resolved `path` value (`Path` object or `None`).
+Resolves a single layer config dict to a list of variant dicts. Each variant is a copy of the layer's properties (`offset`, `anchor`, `scale`, `resample`, `blend_mode`, `slot_bbox`) with a resolved `path` value (`Path` object or `None`) and a `recipe_id` (set for recipe variables, taken from the id list of the variable's recipe type).
 
 Path resolution logic:
 
 | `path` value | Result |
 |---|---|
 | Blank (`None`, `"none"`, `""`, etc.) | `[{..., "path": None}]` |
-| Variable (`"{shaped_slot_0}"` etc.) | One variant per entry in `VARIABLE_MAP[placeholder]` |
+| Variable (`"{shaped_slot_0}"` etc.) | One variant per entry in `variable_map[placeholder]` |
 | List of strings | One variant per entry; blanks → `None`, files validated |
 | Directory path | One variant per `.png` file, sorted alphabetically |
 | Single file path | One variant |
 | Anything else | `FileNotFoundError` |
 
 ```python
-def expand_layers(layers: list[dict]) -> list[list[dict]]
+def expand_layers(layers: list[dict], variable_map: dict[str, list]) -> list[list[dict]]
 ```
 
 Maps `get_layer_variants` over a list of layer configs. Returns the expanded list-of-lists consumed by the combination functions.
@@ -243,19 +247,19 @@ def _get_paste_position(anchor, base_size, overlay_size, offset) -> tuple[int, i
 Returns the top-left pixel coordinate at which to paste an overlay, given the anchor name and pixel offset.
 
 ```python
-def composite_layers(combination: tuple[dict, ...]) -> Image.Image | None
+def composite_layers(combination: tuple[dict, ...], base_img: Image.Image) -> Image.Image
 ```
 
-Composites a tuple of layer variants into a single RGBA image. The first variant is the base; all others are pasted on top in order using `Image.alpha_composite`. Returns `None` if the base layer has no path.
+Copies the pre-scaled `base_img` (the first layer, loaded once per mixer) and alpha-composites every other layer on top in order. Layers with no path are skipped. A layer with a `slot_bbox` is stretched to that box; otherwise it is scaled and placed by `anchor` + `offset`.
 
 ```python
 def _format_filename(template, idx, combination) -> str
 ```
 
-Formats the output filename. Falls back by stripping unknown placeholders if a `KeyError` occurs. Final fallback is `image_{idx}.png`.
+Formats the output filename. Supports `{index}`, `{recipe_id}` and `{layerN}`. Falls back by stripping unknown placeholders if a `KeyError` occurs. Final fallback is `image_{idx}.png`.
 
 ```python
-def process_combination(idx, combination, output_template, output_folder) -> None
+def process_combination(idx, combination, base_img, output_template, output_folder) -> None
 ```
 
 Calls `composite_layers` and saves the result. Called from a thread pool — exceptions propagate back to the main thread via `future.result()`.
@@ -265,10 +269,10 @@ Calls `composite_layers` and saves the result. Called from a thread pool — exc
 ### generate_images
 
 ```python
-def generate_images(image_mixer: dict) -> None
+def generate_images(image_mixer: dict, large_batch_threshold: int = 500) -> None
 ```
 
-Main entry point per mixer. Creates the output folder, validates `combination_mode`, generates all combinations, warns and prompts if count exceeds 500, then dispatches to a `ThreadPoolExecutor`. Exceptions from worker threads are re-raised in the main thread via `future.result()` inside `as_completed`.
+Main entry point per mixer. Creates the output folder, validates `combination_mode`, builds the whitelist-filtered variable map, applies `slot_template` bounding boxes to layers 1+ (layer 1 → slot 0), loads the base image, generates all combinations, prints a warning if the count exceeds the threshold, then dispatches to a `ThreadPoolExecutor`. Exceptions from worker threads are re-raised in the main thread via `future.result()` inside `as_completed`. A mixer whose whitelist matches no recipes logs an info message and produces nothing.
 
 ---
 
@@ -276,10 +280,10 @@ Main entry point per mixer. Creates the output folder, validates `combination_mo
 
 ```python
 if __name__ == "__main__":
-    config_path = Path("data/image_mixer/config.json")
+    mixers_dir = Path("data/image_mixer/mixers")
     ...
-    for image_mixer in config["image_mixers"]:
-        generate_images(image_mixer)
+    for mixer_path in sorted(mixers_dir.glob("*.json")):
+        generate_images(json.load(...))
 ```
 
-Loads `config.json` and calls `generate_images` for each mixer. Warns if the `$schema` key is missing from the config.
+Runs `generate_images` for every `*.json` mixer file in `data/image_mixer/mixers/`.

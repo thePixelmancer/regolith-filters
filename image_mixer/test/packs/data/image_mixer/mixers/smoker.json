@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/image_mixer/data/config.schema.json",
   "output_folder": "RP/textures/output/smoker/",
   "output_template": "{recipe_id}.png",
   "combination_mode": "zip",
@@ -15,14 +16,14 @@
     {
       "anchor": "top_left",
       "path": "{furnace_slot_0}",
-      "offset": [12, 48],
+      "offset": [26, 74],
       "blend_mode": "normal",
       "scale": { "width": 32, "height": 32 }
     },
     {
       "anchor": "top_left",
       "path": "{furnace_slot_1}",
-      "offset": [120, 48],
+      "offset": [146, 82],
       "blend_mode": "normal",
       "scale": { "width": 32, "height": 32 }
     }
