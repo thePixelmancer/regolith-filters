@@ -20,20 +20,18 @@ BLANK_VALUES = {None, "none", "None", ""}
 def _build_variable_map(
     id_whitelist: list[str] | None,
     tag_whitelist: list[str] | None,
+    requested_variables: set[str],
 ) -> dict[str, list]:
     """
     Build the recipe variable map for a single mixer, applying any whitelists.
 
     Called once per mixer so that different mixers can filter different recipe subsets.
-    Raises SystemExit with a clear message if any recipe item cannot be resolved.
     """
-    try:
-        recipe_data = rig.get_flattened_recipe_data(
-            id_whitelist=id_whitelist,
-            tag_whitelist=tag_whitelist,
-        )
-    except rig.TextureResolutionError as e:
-        raise SystemExit(f"[ERROR] Failed to resolve recipe textures:\n  {e}") from None
+    recipe_data = rig.get_flattened_recipe_data(
+        id_whitelist=id_whitelist,
+        tag_whitelist=tag_whitelist,
+        requested_variables=requested_variables,
+    )
 
     # Per-type recipe id lists. They are not exposed as layer paths; they are looked up
     # by get_layer_variants so each variant carries the id of the recipe it came from.
@@ -389,19 +387,21 @@ def generate_images(image_mixer: dict, large_batch_threshold: int = 500) -> None
             f"Invalid combination_mode '{combination_mode}'. Must be 'cartesian' or 'zip'."
         )
 
-    # Build the variable map for this mixer, filtered by the whitelists.
-    # Done per-mixer so different mixers can target different recipe subsets
-    # (e.g. one mixer for furnace-only, another for smoker-only).
-    recipe_gen = image_mixer.get("recipe_generation", {})
-    id_whitelist = recipe_gen.get("id_whitelist") or None
-    tag_whitelist = recipe_gen.get("tag_whitelist") or None
-    variable_map = _build_variable_map(id_whitelist, tag_whitelist)
+    layers = image_mixer["layers"]
+    requested_variables = {
+        layer["path"] for layer in layers if _is_variable(layer["path"])
+    }
+    variable_map = {}
+    if requested_variables:
+        recipe_gen = image_mixer.get("recipe_generation", {})
+        id_whitelist = recipe_gen.get("id_whitelist") or None
+        tag_whitelist = recipe_gen.get("tag_whitelist") or None
+        variable_map = _build_variable_map(id_whitelist, tag_whitelist, requested_variables)
 
     # Read slot template if provided and inject slot_bbox into each layer config.
     # Layers are matched to slots by their position in the array, skipping layer 0
     # (the base). Layer 1 → slot 0, layer 2 → slot 1, etc.
     # The template must be the same pixel dimensions as the scaled output canvas.
-    layers = image_mixer["layers"]
     if template_path := image_mixer.get("slot_template"):
         slot_bboxes = read_slot_template(template_path)
         for layer_index, layer in enumerate(layers[1:], start=0):

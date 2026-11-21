@@ -8,9 +8,9 @@ Internal architecture and code documentation for `image_mixer.py` and `recipe_im
 
 The program is split into two modules:
 
-`recipe_image_gen.py` — reads the Minecraft project (behavior pack + resource pack) and resolves all recipe data into flat lists of texture paths, one entry per recipe per slot.
+`recipe_image_gen.py` — reads the Minecraft project (behavior pack + resource pack) and resolves requested recipe textures into flat lists, one entry per matching recipe per slot.
 
-`image_mixer.py` — reads each mixer file in `data/image_mixer/mixers/`, resolves layer configs into lists of image variants, generates combinations of those variants, and composites + saves the output images. It imports `recipe_image_gen` at startup and builds a per-mixer map of recipe slot variables.
+`image_mixer.py` — reads each mixer file in `data/image_mixer/mixers/`, resolves layer configs into lists of image variants, generates combinations of those variants, and composites + saves the output images. It builds a per-mixer recipe variable map only when recipe variables are used.
 
 `slot_template.py` — parses a slot template PNG into per-slot bounding boxes, and `image_cache.py` caches loaded images across combinations.
 
@@ -22,23 +22,11 @@ The program is split into two modules:
 
 | Name | Type | Description |
 |---|---|---|
-| `TEXTURE_MAP` | `dict[str, str]` | Loaded from `data/image_mixer/texture_map.json`. Maps item identifiers and tag names to texture file paths. |
+| `TEXTURE_MAP_PATH` | `str` | Path to the optional item and tag texture overrides, loaded and cached on first texture lookup. |
 | `project` | `Project` | Reticulator project pointing at `BP/` and `RP/`. |
 | `vanilla` | `Project` | Reticulator project pointing at the vanilla pack copies. |
 | `BP` | `BehaviorPack` | Behavior pack from `project`. |
 | `RP` | `ResourcePack` | Resource pack from `project`. |
-
-### TextureResolutionError
-
-```python
-class TextureResolutionError(Exception)
-```
-
-Raised when a named item identifier cannot be found in either `TEXTURE_MAP` or the behavior pack via reticulator. Also raised when a tag name has no entry in `TEXTURE_MAP` (tags cannot be resolved automatically).
-
-Never raised for empty/blank slots — those legitimately return `None`.
-
----
 
 ### get_item_texture_path
 
@@ -50,11 +38,11 @@ Resolves an item identifier to a texture file path.
 
 Resolution order:
 1. `item_name` is `None` or blank → return `None` (empty slot, not an error)
-2. `item_name` is in `TEXTURE_MAP` → return the override path
+2. `item_name` is in the optional texture map → return the override path
 3. Reticulator finds the item in BP → follow `minecraft:icon` → look up shortname in `item_texture.json` → return `RP/<path>.png`
-4. Reticulator does not find the item → raise `TextureResolutionError`
+4. The texture cannot be resolved → warn and return `None`
 
-Steps 3's intermediate lookups (`minecraft:icon` missing, shortname missing, texture data missing) return `None` rather than raising — reticulator may locate vanilla items whose textures are not present in the scanned RP, and this is not a configuration error.
+Missing icons, item texture metadata, and texture entries also produce a warning and return `None`. Missing map files are treated as an empty map; malformed JSON is not suppressed.
 
 ---
 
@@ -64,7 +52,7 @@ Steps 3's intermediate lookups (`minecraft:icon` missing, shortname missing, tex
 def get_tag_texture_path(tag_name: str) -> str | None
 ```
 
-Resolves a recipe tag name to a texture file path via `TEXTURE_MAP` only. Tags have no item definition to look up, so a manual override is the only resolution mechanism. Raises `TextureResolutionError` if no entry exists.
+Resolves a recipe tag name to a texture file path via the optional texture map only. Tags have no item definition to look up, so a manual override is the only resolution mechanism. Warns and returns `None` if no entry exists.
 
 ---
 
@@ -100,9 +88,9 @@ This means a 1×2 vertical pattern lands in column 1 (slots 1, 4), and a 2×2 pa
 ### get_shaped_slot_textures / get_shapeless_slot_textures / get_furnace_slot_textures
 
 ```python
-def get_shaped_slot_textures(recipe_data: dict) -> dict
-def get_shapeless_slot_textures(recipe_data: dict) -> dict
-def get_furnace_slot_textures(recipe_data: dict) -> dict
+def get_shaped_slot_textures(recipe_data: dict, requested_variables=None) -> dict
+def get_shapeless_slot_textures(recipe_data: dict, requested_variables=None) -> dict
+def get_furnace_slot_textures(recipe_data: dict, requested_variables=None) -> dict
 ```
 
 Each accepts the inner recipe data dict (the value under `"minecraft:recipe_shaped"` etc.) and returns:
@@ -118,6 +106,7 @@ Each accepts the inner recipe data dict (the value under `"minecraft:recipe_shap
 `get_shapeless_slot_textures` expands ingredients with `count > 1` into repeated consecutive slot entries before resolving. It works on the full ingredient dict (not just the item name) so tag entries survive expansion.
 
 `get_furnace_slot_textures` has no `"result"` key — the output item is slot 1.
+When `requested_variables` is provided, unrequested slots and results are left as `None` without looking up their textures.
 
 ---
 
@@ -134,10 +123,10 @@ Appends one recipe's resolved data into the slot-indexed store structure. Writes
 ### get_flattened_recipe_data
 
 ```python
-def get_flattened_recipe_data(id_whitelist=None, tag_whitelist=None) -> dict
+def get_flattened_recipe_data(id_whitelist=None, tag_whitelist=None, requested_variables=None) -> dict
 ```
 
-Iterates all recipes in `BP.recipes`, identifies the recipe type, dispatches to the appropriate handler, and accumulates results into the structure below. If either whitelist is non-empty, a recipe is kept only if its identifier is in `id_whitelist` or one of its station tags is in `tag_whitelist`.
+Iterates recipes in `BP.recipes`, filters by requested variable types and whitelists before resolving textures, dispatches to the appropriate handler, and accumulates results into the structure below. If either whitelist is non-empty, a recipe is kept only if its identifier is in `id_whitelist` or one of its station tags is in `tag_whitelist`.
 
 ```python
 {
@@ -180,7 +169,7 @@ Adding support for a new recipe type means adding one entry here and writing a h
 | `SCHEMA_URL` | `str` | URL of the mixer JSON schema. |
 | `BLANK_VALUES` | `set` | `{None, "none", "None", ""}` — all values treated as intentionally empty paths. |
 
-The recipe variable map is not global: `_build_variable_map(id_whitelist, tag_whitelist)` builds it once per mixer (so mixers can use different whitelists), mapping placeholders like `"{shaped_slot_0}"` to recipe data lists. It also holds `"{shaped_recipe_id}"`, `"{shapeless_recipe_id}"` and `"{furnace_recipe_id}"` id lists, which `get_layer_variants` uses to tag each variant with its recipe id. Raises `SystemExit` on `TextureResolutionError`.
+The recipe variable map is not global: `_build_variable_map(id_whitelist, tag_whitelist, requested_variables)` builds it for mixers using recipe variables, mapping placeholders like `"{shaped_slot_0}"` to recipe data lists. It also holds `"{shaped_recipe_id}"`, `"{shapeless_recipe_id}"` and `"{furnace_recipe_id}"` id lists, which `get_layer_variants` uses to tag each variant with its recipe id.
 
 ---
 
@@ -272,7 +261,7 @@ Calls `composite_layers` and saves the result. Called from a thread pool — exc
 def generate_images(image_mixer: dict, large_batch_threshold: int = 500) -> None
 ```
 
-Main entry point per mixer. Creates the output folder, validates `combination_mode`, builds the whitelist-filtered variable map, applies `slot_template` bounding boxes to layers 1+ (layer 1 → slot 0), loads the base image, generates all combinations, prints a warning if the count exceeds the threshold, then dispatches to a `ThreadPoolExecutor`. Exceptions from worker threads are re-raised in the main thread via `future.result()` inside `as_completed`. A mixer whose whitelist matches no recipes logs an info message and produces nothing.
+Main entry point per mixer. Creates the output folder, validates `combination_mode`, builds a whitelist-filtered variable map if recipe variables are used, applies `slot_template` bounding boxes to layers 1+ (layer 1 → slot 0), loads the base image, generates all combinations, prints a warning if the count exceeds the threshold, then dispatches to a `ThreadPoolExecutor`. Exceptions from worker threads are re-raised in the main thread via `future.result()` inside `as_completed`. A mixer whose whitelist matches no recipes logs an info message and produces nothing.
 
 ---
 

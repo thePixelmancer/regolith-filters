@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/thePixelmancer/regolith-filters/refs/heads/main/image_mixer/data/config.schema.json",
+  "output_folder": "RP/textures/output/data_sources/",
+  "output_template": "data_sources.png",
+  "layers": [
+    {
+      "path": "data/image_mixer/vanilla_items/apple.png"
+    },
+    {
+      "path": "data/image_mixer/vanilla_items/stick.png"
+    }
+  ]
+}

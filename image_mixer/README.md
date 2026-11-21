@@ -18,7 +18,7 @@ data/
     mixers/
       shaped.json        ← one file per mixer
       furnace.json
-    texture_map.json     ← manual texture path overrides
+    texture_map.json     ← optional manual texture path overrides
 BP/                      ← your behavior pack
 RP/                      ← your resource pack
 ```
@@ -200,7 +200,7 @@ If both lists are empty or omitted, all recipes are used. Otherwise a recipe is 
 
 ## Recipe variables
 
-When a layer path is a recipe variable placeholder, it is resolved to a list of texture paths — one per recipe of that type — at startup. This lets you drive image generation directly from your pack's recipe files.
+When a layer path is a recipe variable placeholder, it is resolved to a list of texture paths — one per matching recipe of that type. Only variables used by the mixer are resolved. Mixers without recipe variables do not inspect recipe textures or require a texture map.
 
 All variables follow the format `{type_slotname}`.
 
@@ -237,7 +237,7 @@ Shaped, shapeless, and furnace variables are independent lists: each variable on
 
 ## texture_map.json
 
-This file contains manual texture path overrides. It is a flat JSON object mapping item identifiers (or tag names) to texture file paths:
+This optional file contains manual texture path overrides. It is a flat JSON object mapping item identifiers (or tag names) to texture file paths. No default mappings are added:
 
 ```jsonc
 {
@@ -254,20 +254,20 @@ Use this for:
 
 ### Texture resolution order
 
-For every item identifier encountered in a recipe, the tool resolves it in this order:
+For each texture requested by a recipe variable in a matching recipe, the tool resolves its item in this order:
 
 1. Check `texture_map.json` for a manual override → use it if found
 2. Look up the item in the behavior pack via reticulator → follow `minecraft:icon` → look up in `item_texture.json` → return the path
-3. If the item is not found anywhere → **error**, the program stops
+3. If the texture cannot be resolved → print a warning and leave that layer blank
 
-Tags skip step 2 entirely since they have no item definition. If a tag has no entry in `texture_map.json` the program stops with an error.
+Tags skip step 2 entirely since they have no item definition. A requested tag without a mapping also produces a warning and a blank layer. If the optional map exists but contains invalid JSON, the error is reported when a texture is requested.
 
 ---
 
 ## Errors
 
-**`TextureResolutionError`**
-An item or tag referenced in a recipe could not be resolved to a texture. The error message will name the item/tag and tell you to add it to `texture_map.json`.
+**Missing texture warning**
+A requested item or tag could not be resolved. The warning names it and suggests adding an entry to `texture_map.json`; its layer is left blank.
 
 **`FileNotFoundError`**
 A layer `path` points to a file or directory that does not exist.

@@ -1,11 +1,11 @@
 import json
+from functools import lru_cache
+
 from reticulator import Project
+from reticulator.core import AssetNotFoundError
 
 # -------------------------------------------------------------------------------------- #
 TEXTURE_MAP_PATH = "data/image_mixer/texture_map.json"
-
-with open(TEXTURE_MAP_PATH, "r", encoding="utf-8") as f:
-    TEXTURE_MAP: dict[str, str] = json.load(f)
 
 project = Project("BP", "RP")
 vanilla = Project("data/vanilla_packs/behavior_pack", "data/vanilla_packs/resource_pack")
@@ -14,8 +14,20 @@ RP = project.resource_pack
 
 
 # -------------------------------------------------------------------------------------- #
-class TextureResolutionError(Exception):
-    """Raised when a named recipe item cannot be found in the texture map or behavior pack."""
+@lru_cache(maxsize=1)
+def _texture_map() -> dict[str, str]:
+    try:
+        with open(TEXTURE_MAP_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+
+def _warn_missing_texture(kind: str, name: str) -> None:
+    print(
+        f"[WARNING] No texture found for {kind} '{name}'. "
+        f"Add an entry to '{TEXTURE_MAP_PATH}'; this layer will be blank."
+    )
 
 
 def get_item_texture_path(item_name: str | None) -> str | None:
@@ -26,20 +38,18 @@ def get_item_texture_path(item_name: str | None) -> str | None:
       1. Empty slot (item_name is None/blank) → return None
       2. Manual override in texture_map.json → return that path
       3. Reticulator BP scan → resolve icon shortname → return RP texture path
-      4. Not found by reticulator → raise TextureResolutionError
+      4. If unresolved → warn and return None
     """
     if not item_name:
         return None
 
-    if path_override := TEXTURE_MAP.get(item_name):
+    if path_override := _texture_map().get(item_name):
         return path_override
 
     item = BP.get_item(item_name)
     if not item:
-        raise TextureResolutionError(
-            f"Item '{item_name}' was not found in the behavior pack and has no entry in "
-            f"'{TEXTURE_MAP_PATH}'. Add a manual texture path override there to fix this."
-        )
+        _warn_missing_texture("item", item_name)
+        return None
 
     icon = item.get_jsonpath("**/minecraft:icon", default=None)
     if isinstance(icon, str):
@@ -47,15 +57,21 @@ def get_item_texture_path(item_name: str | None) -> str | None:
     elif isinstance(icon, dict):
         shortname = icon.get("textures", {}).get("default")
     else:
-        return None
-
+        shortname = None
     if not shortname:
+        _warn_missing_texture("item", item_name)
         return None
 
-    texture_data = RP.item_texture_file.get_jsonpath(
+    try:
+        texture_file = RP.item_texture_file
+    except AssetNotFoundError:
+        _warn_missing_texture("item", item_name)
+        return None
+    texture_data = texture_file.get_jsonpath(
         f"texture_data/{shortname}/textures", default=None
     )
     if not texture_data:
+        _warn_missing_texture("item", item_name)
         return None
 
     path = texture_data[0].get("path") if isinstance(texture_data, list) else texture_data
@@ -67,15 +83,13 @@ def get_tag_texture_path(tag_name: str) -> str | None:
     Resolve a tag name to a texture path via the manual override map.
 
     Tags have no item definition to look up, so the override map is the only
-    resolution mechanism. Raises TextureResolutionError if no override is present.
+    resolution mechanism. Warns and returns None if no override is present.
     """
-    if path_override := TEXTURE_MAP.get(tag_name):
+    if path_override := _texture_map().get(tag_name):
         return path_override
 
-    raise TextureResolutionError(
-        f"Tag '{tag_name}' has no entry in '{TEXTURE_MAP_PATH}'. "
-        f"Tags cannot be resolved automatically — add a manual texture path override there to fix this."
-    )
+    _warn_missing_texture("tag", tag_name)
+    return None
 
 
 def get_slot_texture_path(slot_entry: dict | None) -> str | None:
@@ -140,7 +154,9 @@ def _strip_namespace(identifier: str | None) -> str | None:
     return identifier
 
 
-def get_shaped_slot_textures(recipe_data: dict) -> dict:
+def get_shaped_slot_textures(
+    recipe_data: dict, requested_variables: set[str] | None = None
+) -> dict:
     """Return the identifier, per-slot textures, and result texture for a shaped recipe."""
     identifier = _strip_namespace(recipe_data.get("description", {}).get("identifier"))
     result_item = recipe_data.get("result", {}).get("item")
@@ -148,12 +164,23 @@ def get_shaped_slot_textures(recipe_data: dict) -> dict:
     return {
         "id":     identifier,
         "tags":   [],
-        "slots":  [get_slot_texture_path(entry) for entry in slot_entries],
-        "result": get_item_texture_path(result_item),
+        "slots":  [
+            get_slot_texture_path(entry)
+            if requested_variables is None or f"{{shaped_slot_{i}}}" in requested_variables
+            else None
+            for i, entry in enumerate(slot_entries)
+        ],
+        "result": (
+            get_item_texture_path(result_item)
+            if requested_variables is None or "{shaped_result}" in requested_variables
+            else None
+        ),
     }
 
 
-def get_shapeless_slot_textures(recipe_data: dict) -> dict:
+def get_shapeless_slot_textures(
+    recipe_data: dict, requested_variables: set[str] | None = None
+) -> dict:
     """
     Return the identifier, per-slot textures, and result texture for a shapeless recipe.
 
@@ -170,16 +197,29 @@ def get_shapeless_slot_textures(recipe_data: dict) -> dict:
         count = ingredient.get("count", 1)
         expanded.extend([ingredient] * count)
 
-    slots = [get_slot_texture_path(expanded[i]) if i < len(expanded) else None for i in range(9)]
+    slots = [
+        get_slot_texture_path(expanded[i])
+        if i < len(expanded) and (
+            requested_variables is None or f"{{shapeless_slot_{i}}}" in requested_variables
+        )
+        else None
+        for i in range(9)
+    ]
     return {
         "id":     identifier,
         "tags":   [],
         "slots":  slots,
-        "result": get_item_texture_path(result_item),
+        "result": (
+            get_item_texture_path(result_item)
+            if requested_variables is None or "{shapeless_result}" in requested_variables
+            else None
+        ),
     }
 
 
-def get_furnace_slot_textures(recipe_data: dict) -> dict:
+def get_furnace_slot_textures(
+    recipe_data: dict, requested_variables: set[str] | None = None
+) -> dict:
     """
     Return the identifier, station tags, and slot textures for a furnace recipe.
 
@@ -194,7 +234,12 @@ def get_furnace_slot_textures(recipe_data: dict) -> dict:
     return {
         "id":    identifier,
         "tags":  tags,
-        "slots": [get_item_texture_path(input_item), get_item_texture_path(output_item)],
+        "slots": [
+            get_item_texture_path(item)
+            if requested_variables is None or f"{{furnace_slot_{i}}}" in requested_variables
+            else None
+            for i, item in enumerate((input_item, output_item))
+        ],
     }
 
 
@@ -245,6 +290,7 @@ def _append_slots(store: dict, slot_textures: dict, num_slots: int) -> None:
 def get_flattened_recipe_data(
     id_whitelist: list[str] | None = None,
     tag_whitelist: list[str] | None = None,
+    requested_variables: set[str] | None = None,
 ) -> dict:
     """
     Return all recipe data in a slot-indexed format, separated by recipe type.
@@ -254,6 +300,7 @@ def get_flattened_recipe_data(
                        are included. Combined with tag_whitelist via OR.
         tag_whitelist: If provided, only recipes with at least one matching station
                        tag are included. Combined with id_whitelist via OR.
+        requested_variables: Resolve only these recipe placeholders, or all if None.
 
     Structure:
         {
@@ -278,8 +325,17 @@ def get_flattened_recipe_data(
     for recipe in BP.recipes:
         for recipe_type, (store_key, handler, num_slots) in recipe_handlers.items():
             if recipe_data := recipe.data.get(recipe_type):
-                slot_textures = handler(recipe_data)
-                if _passes_whitelist(slot_textures, id_whitelist, tag_whitelist):
+                if requested_variables is not None and not any(
+                    variable.startswith(f"{{{store_key}_")
+                    for variable in requested_variables
+                ):
+                    break
+                metadata = {
+                    "id": _strip_namespace(recipe_data.get("description", {}).get("identifier")),
+                    "tags": recipe_data.get("tags", []) if store_key == "furnace" else [],
+                }
+                if _passes_whitelist(metadata, id_whitelist, tag_whitelist):
+                    slot_textures = handler(recipe_data, requested_variables)
                     _append_slots(final[store_key], slot_textures, num_slots)
                 break
 
